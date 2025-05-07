@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="uk">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  </head>
+  <body>
+    <h1>Привіт 👋</h1>
+    <p>Це твій Telegram Mini App!</p>
+    <button onclick="testPing()">Перевірити бекенд</button>
+    <pre id="result"></pre>
+
+    <script>
+      const tg = window.Telegram.WebApp;
+      tg.expand(); // розгортає Mini App на весь екран
+
+      async function testPing() {
+        const res = await fetch("http://localhost:3000/ping");
+        const data = await res.json();
+        document.getElementById("result").textContent = JSON.stringify(
+          data,
+          null,
+          2
+        );
+      }
+    </script>
+  </body>
+</html>

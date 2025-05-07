@@ -1,5 +1,6 @@
 import Fastify from "fastify";
 import fastifyPostgres from "@fastify/postgres";
+import fastifyCors from "@fastify/cors"; // ✅ додано CORS
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
@@ -10,8 +11,9 @@ dotenv.config({ path: path.resolve(__dirname, "../.env") });
 
 const fastify = Fastify({ logger: true });
 
-fastify.register(fastifyPostgres, {
-  connectionString: process.env.DATABASE_URL,
+// ✅ Увімкни CORS до запуску сервера
+fastify.register(fastifyCors, {
+  origin: "*", // можна замінити на 'http://localhost:3001' або 'https://твоє_доменне_ім’я' для обмежень
 });
 
 console.log("ENV DB URL:", process.env.DATABASE_URL);
