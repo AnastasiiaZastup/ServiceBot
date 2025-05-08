@@ -10,7 +10,7 @@ bot.start((ctx) => {
           {
             text: "Відкрити Mini App",
             web_app: {
-              url: "http://localhost:61243",
+              url: "https://service-bot-ten.vercel.app", // ✅ ПРАВИЛЬНО!
             },
           },
         ],

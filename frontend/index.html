@@ -16,7 +16,9 @@
       tg.expand(); // розгортає Mini App на весь екран
 
       async function testPing() {
-        const res = await fetch("http://localhost:3000/ping");
+        const res = await fetch(
+          "https://service-bot-backend.onrender.com/ping"
+        );
         const data = await res.json();
         document.getElementById("result").textContent = JSON.stringify(
           data,
