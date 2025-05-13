@@ -19,6 +19,9 @@ fastify.register(fastifyCors, {
 // Ініціалізуємо підключення до бази даних
 fastify.register(fastifyPostgres, {
   connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false, // дозволити самопідписаний сертифікат (Render це дозволяє)
+  },
 });
 
 console.log("ENV DB URL:", process.env.DATABASE_URL);
