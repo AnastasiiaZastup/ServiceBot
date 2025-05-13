@@ -19,22 +19,30 @@
       const tg = window.Telegram.WebApp;
       tg.expand();
 
+      console.log("tg.initDataUnsafe:", tg.initDataUnsafe);
+      console.log("tg.initDataUnsafe.user:", tg.initDataUnsafe?.user);
+
       async function testPing() {
-        const res = await fetch(
-          "https://service-bot-backend.onrender.com/ping"
-        );
-        const data = await res.json();
-        document.getElementById("result").textContent = JSON.stringify(
-          data,
-          null,
-          2
-        );
+        try {
+          const res = await fetch(
+            "https://service-bot-backend.onrender.com/ping"
+          );
+          const data = await res.json();
+          document.getElementById("result").textContent = JSON.stringify(
+            data,
+            null,
+            2
+          );
+        } catch (error) {
+          console.error("Помилка тестового запиту до бекенду:", error);
+        }
       }
 
       async function registerUser() {
         const tgUser = tg.initDataUnsafe?.user;
 
         if (!tgUser?.id) {
+          console.warn("tgUser не визначений або не має ID:", tgUser);
           document.getElementById("registerResult").textContent =
             "Не вдалося отримати Telegram ID";
           return;
@@ -46,6 +54,8 @@
           username: tgUser.username || null,
           phone: null,
         };
+
+        console.log("📤 Відправляємо дані для реєстрації:", body);
 
         try {
           const res = await fetch(
@@ -60,9 +70,12 @@
           );
 
           const data = await res.json();
+          console.log("✅ Відповідь від бекенду:", data);
+
           document.getElementById("registerResult").textContent =
             JSON.stringify(data, null, 2);
         } catch (err) {
+          console.error("❌ Помилка реєстрації:", err);
           document.getElementById("registerResult").textContent =
             "Помилка реєстрації";
         }
