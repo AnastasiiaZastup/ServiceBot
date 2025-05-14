@@ -1,7 +1,9 @@
 // App.jsx
 import React, { useState } from "react";
-import Register from "./pages/Register.jsx";
+
 import Services from "./pages/Services.jsx";
+
+import Register from "./pages/Register.jsx";
 
 function App() {
   const [view, setView] = useState("register");
