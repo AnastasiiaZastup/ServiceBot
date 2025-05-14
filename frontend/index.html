@@ -1,85 +1,14 @@
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Telegram Mini App</title>
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vite + React</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
   </head>
   <body>
-    <h1>Привіт 👋</h1>
-    <p>Це твій Telegram Mini App!</p>
-
-    <button onclick="testPing()">Перевірити бекенд</button>
-    <pre id="result"></pre>
-
-    <button onclick="registerUser()">Зареєструватися</button>
-    <pre id="registerResult"></pre>
-
-    <script>
-      const tg = window.Telegram.WebApp;
-      tg.expand();
-
-      console.log("tg.initDataUnsafe:", tg.initDataUnsafe);
-      console.log("tg.initDataUnsafe.user:", tg.initDataUnsafe?.user);
-
-      async function testPing() {
-        try {
-          const res = await fetch(
-            "https://service-bot-backend.onrender.com/ping"
-          );
-          const data = await res.json();
-          document.getElementById("result").textContent = JSON.stringify(
-            data,
-            null,
-            2
-          );
-        } catch (error) {
-          console.error("Помилка тестового запиту до бекенду:", error);
-        }
-      }
-
-      async function registerUser() {
-        const tgUser = tg.initDataUnsafe?.user;
-
-        if (!tgUser?.id) {
-          console.warn("tgUser не визначений або не має ID:", tgUser);
-          document.getElementById("registerResult").textContent =
-            "Не вдалося отримати Telegram ID";
-          return;
-        }
-
-        const body = {
-          telegram_id: tgUser.id,
-          name: tgUser.first_name,
-          username: tgUser.username || null,
-          phone: null,
-        };
-
-        console.log("📤 Відправляємо дані для реєстрації:", body);
-
-        try {
-          const res = await fetch(
-            "https://service-bot-backend.onrender.com/user/register",
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify(body),
-            }
-          );
-
-          const data = await res.json();
-          console.log("✅ Відповідь від бекенду:", data);
-
-          document.getElementById("registerResult").textContent =
-            JSON.stringify(data, null, 2);
-        } catch (err) {
-          console.error("❌ Помилка реєстрації:", err);
-          document.getElementById("registerResult").textContent =
-            "Помилка реєстрації";
-        }
-      }
-    </script>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

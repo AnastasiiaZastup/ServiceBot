@@ -3,8 +3,7 @@ import fastifyPostgres from "@fastify/postgres";
 import fastifyCors from "@fastify/cors";
 import dotenv from "dotenv";
 
-// Підключаємо .env лише локально (Render сам підтягує змінні)
-dotenv.config(); // без кастомного path
+dotenv.config();
 
 // 🔎 Перевірка чи доступна змінна
 console.log("✅ DATABASE_URL:", process.env.DATABASE_URL);
