@@ -11,37 +11,35 @@ export default function SelectMaster({ service }) {
         );
         const data = await res.json();
         setMasters(data.masters || []);
-      } catch (error) {
-        console.error("Помилка отримання майстрів:", error);
+      } catch (err) {
+        console.error("Помилка отримання майстрів", err);
       }
     };
 
-    if (service?.id) {
-      fetchMasters();
-    }
+    fetchMasters();
   }, [service]);
 
   return (
     <div style={{ padding: "16px" }}>
-      <h2>Майстри для: {service.name}</h2>
+      <h2>Майстри для послуги: {service.name}</h2>
       {masters.length === 0 ? (
         <p>Майстрів не знайдено.</p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {masters.map((master) => (
-            <li key={master.id} style={{ marginBottom: "12px" }}>
-              <strong>{master.name}</strong> (@{master.username})
+        <ul style={{ padding: 0, listStyle: "none" }}>
+          {masters.map((m) => (
+            <li key={m.id} style={{ marginBottom: "12px" }}>
+              👩‍🎨 <strong>{m.name}</strong> ({m.experience} років досвіду)
               <br />
               <button
                 style={{
-                  marginTop: "8px",
+                  marginTop: "6px",
                   padding: "6px 12px",
-                  backgroundColor: "#10b981",
+                  background: "#10b981",
                   color: "#fff",
                   border: "none",
                   borderRadius: "8px",
-                  cursor: "pointer",
                 }}
+                onClick={() => alert(`Обрано майстра: ${m.name}`)}
               >
                 Обрати
               </button>
