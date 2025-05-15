@@ -263,6 +263,31 @@ fastify.get(
   }
 );
 
+// Отримати майстрів за ID послуги
+fastify.get("/masters-by-service/:serviceId", async (req, reply) => {
+  const { serviceId } = req.params;
+
+  try {
+    const client = await fastify.pg.connect();
+
+    const { rows } = await client.query(
+      `
+      SELECT u.id, u.name, u.username, u.phone
+      FROM users u
+      JOIN masters_services ms ON ms.master_id = u.id
+      WHERE ms.service_id = $1 AND u.role = 'master'
+      `,
+      [serviceId]
+    );
+
+    client.release();
+    return reply.send({ masters: rows });
+  } catch (err) {
+    console.error("Error fetching masters by service:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 // Отримати записи майстра (доступно майстру)
 fastify.get(
   "/master/appointments/:telegram_id",
