@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 
-export default function SelectMaster({ service }) {
+export default function SelectMaster({ service, user, onBack }) {
   const [masters, setMasters] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchMasters = async () => {
@@ -10,39 +11,35 @@ export default function SelectMaster({ service }) {
           `https://service-bot-backend.onrender.com/masters-by-service/${service.id}`
         );
         const data = await res.json();
+        console.log("Отримано майстрів:", data);
         setMasters(data.masters || []);
-      } catch (err) {
-        console.error("Помилка отримання майстрів", err);
+      } catch (error) {
+        console.error("Помилка отримання майстрів:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchMasters();
+    if (service?.id) {
+      fetchMasters();
+    }
   }, [service]);
+
+  if (loading) return <p>Завантаження майстрів...</p>;
 
   return (
     <div style={{ padding: "16px" }}>
       <h2>Майстри для послуги: {service.name}</h2>
+      <button onClick={onBack}>⬅️ Назад</button>
       {masters.length === 0 ? (
         <p>Майстрів не знайдено.</p>
       ) : (
-        <ul style={{ padding: 0, listStyle: "none" }}>
+        <ul style={{ listStyle: "none", padding: 0 }}>
           {masters.map((m) => (
             <li key={m.id} style={{ marginBottom: "12px" }}>
-              👩‍🎨 <strong>{m.name}</strong> ({m.experience} років досвіду)
+              <strong>{m.name}</strong> (@{m.username})
               <br />
-              <button
-                style={{
-                  marginTop: "6px",
-                  padding: "6px 12px",
-                  background: "#10b981",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                }}
-                onClick={() => alert(`Обрано майстра: ${m.name}`)}
-              >
-                Обрати
-              </button>
+              <button>Обрати</button>
             </li>
           ))}
         </ul>
