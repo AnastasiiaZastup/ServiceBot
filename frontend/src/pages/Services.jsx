@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-export default function Services() {
+export default function Services({ onSelectService }) {
   const [services, setServices] = useState([]);
 
   useEffect(() => {
@@ -12,7 +12,7 @@ export default function Services() {
         const data = await res.json();
         setServices(data.services || []);
       } catch (error) {
-        console.error("Помилка завантаження послуг", error);
+        console.error("Помилка отримання послуг:", error);
       }
     };
 
@@ -28,18 +28,19 @@ export default function Services() {
         <ul style={{ listStyle: "none", padding: 0 }}>
           {services.map((service) => (
             <li key={service.id} style={{ marginBottom: "12px" }}>
-              <strong>{service.name}</strong> — {service.description}
+              <strong>{service.name}</strong>
               <br />
               <button
+                onClick={() => onSelectService(service)}
                 style={{
                   marginTop: "8px",
                   padding: "6px 12px",
+                  backgroundColor: "#2b82f6",
+                  color: "#fff",
                   border: "none",
                   borderRadius: "8px",
-                  background: "#2b82f6",
-                  color: "white",
+                  cursor: "pointer",
                 }}
-                onClick={() => alert(`Обрана послуга: ${service.name}`)}
               >
                 Обрати
               </button>

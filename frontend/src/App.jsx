@@ -1,13 +1,13 @@
-// App.jsx
 import React, { useState } from "react";
-
-import Services from "./pages/Services.jsx";
-
 import Register from "./pages/Register.jsx";
+import Services from "./pages/Services.jsx";
+import SelectMaster from "./pages/SelectMaster.jsx";
 
 function App() {
+  const [, setUser] = useState(null);
+
   const [view, setView] = useState("register");
-  const [user, setUser] = useState(null);
+  const [selectedService, setSelectedService] = useState(null);
 
   return (
     <>
@@ -19,7 +19,17 @@ function App() {
           }}
         />
       )}
-      {view === "services" && <Services user={user} />}
+      {view === "services" && (
+        <Services
+          onSelectService={(service) => {
+            setSelectedService(service);
+            setView("selectMaster");
+          }}
+        />
+      )}
+      {view === "selectMaster" && selectedService && (
+        <SelectMaster service={selectedService} />
+      )}
     </>
   );
 }
