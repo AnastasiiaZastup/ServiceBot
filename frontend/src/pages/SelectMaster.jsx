@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-export default function SelectMaster({ service, user, onBack }) {
+export default function SelectMaster({ service, onBack, onSelectMaster }) {
   const [masters, setMasters] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -39,7 +39,7 @@ export default function SelectMaster({ service, user, onBack }) {
             <li key={m.id} style={{ marginBottom: "12px" }}>
               <strong>{m.name}</strong> (@{m.username})
               <br />
-              <button>Обрати</button>
+              <button onClick={() => onSelectMaster(m)}>Обрати</button>
             </li>
           ))}
         </ul>

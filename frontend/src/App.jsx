@@ -2,17 +2,21 @@ import React, { useState, useEffect } from "react";
 import Register from "./pages/Register.jsx";
 import Services from "./pages/Services.jsx";
 import SelectMaster from "./pages/SelectMaster.jsx";
+import SelectTime from "./pages/SelectTime.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
-  const [view, setView] = useState("register"); // "register" | "services" | "selectMaster"
+  const [view, setView] = useState("register");
   const [telegramUser, setTelegramUser] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
+  const [selectedMaster, setSelectedMaster] = useState(null);
 
   useEffect(() => {
     const tg = window.Telegram.WebApp;
     tg.expand();
-    setTelegramUser(tg.initDataUnsafe?.user || null);
+    const userFromTelegram = tg.initDataUnsafe?.user || null;
+    console.log("🟢 Telegram user:", userFromTelegram);
+    setTelegramUser(userFromTelegram);
   }, []);
 
   const handleRegister = async () => {
@@ -32,13 +36,18 @@ function App() {
       );
 
       const data = await res.json();
+      console.log("🟢 Зареєстрований користувач:", data.user);
       setUser(data.user);
       setView("services");
     } catch (err) {
-      console.error("Помилка реєстрації:", err);
+      console.error("❌ Помилка реєстрації:", err);
       alert("Не вдалося зареєструватися.");
     }
   };
+
+  console.log("🔍 CURRENT VIEW:", view);
+  console.log("🔍 selectedService:", selectedService);
+  console.log("🔍 selectedMaster:", selectedMaster);
 
   if (!telegramUser) return <p>Завантаження Telegram-користувача...</p>;
 
@@ -69,6 +78,7 @@ function App() {
         <Services
           user={user}
           onSelectService={(service) => {
+            console.log("🟡 Обрана послуга:", service);
             setSelectedService(service);
             setView("selectMaster");
           }}
@@ -80,6 +90,20 @@ function App() {
           user={user}
           service={selectedService}
           onBack={() => setView("services")}
+          onSelectMaster={(master) => {
+            console.log("🟢 Обрано майстра:", master);
+            setSelectedMaster(master);
+            setView("selectTime");
+          }}
+        />
+      )}
+
+      {view === "selectTime" && selectedService && selectedMaster && (
+        <SelectTime
+          user={user}
+          service={selectedService}
+          master={selectedMaster}
+          onBack={() => setView("selectMaster")}
         />
       )}
     </>
