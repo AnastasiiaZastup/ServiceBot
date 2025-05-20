@@ -3,6 +3,7 @@ import Register from "./pages/Register.jsx";
 import Services from "./pages/Services.jsx";
 import SelectMaster from "./pages/SelectMaster.jsx";
 import SelectTime from "./pages/SelectTime.jsx";
+import MyAppointments from "./pages/MyAppointments.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -45,10 +46,6 @@ function App() {
     }
   };
 
-  console.log("🔍 CURRENT VIEW:", view);
-  console.log("🔍 selectedService:", selectedService);
-  console.log("🔍 selectedMaster:", selectedMaster);
-
   if (!telegramUser) return <p>Завантаження Telegram-користувача...</p>;
 
   return (
@@ -75,14 +72,30 @@ function App() {
       )}
 
       {view === "services" && user && (
-        <Services
-          user={user}
-          onSelectService={(service) => {
-            console.log("🟡 Обрана послуга:", service);
-            setSelectedService(service);
-            setView("selectMaster");
-          }}
-        />
+        <div style={{ padding: "16px" }}>
+          <Services
+            user={user}
+            onSelectService={(service) => {
+              setSelectedService(service);
+              setView("selectMaster");
+            }}
+          />
+
+          <button
+            onClick={() => setView("myAppointments")}
+            style={{
+              marginTop: "16px",
+              padding: "10px 20px",
+              backgroundColor: "#3b82f6",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            📅 Мої записи
+          </button>
+        </div>
       )}
 
       {view === "selectMaster" && selectedService && (
@@ -105,6 +118,10 @@ function App() {
           master={selectedMaster}
           onBack={() => setView("selectMaster")}
         />
+      )}
+
+      {view === "myAppointments" && user && (
+        <MyAppointments user={user} onBack={() => setView("services")} />
       )}
     </>
   );
