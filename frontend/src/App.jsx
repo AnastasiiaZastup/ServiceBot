@@ -127,13 +127,16 @@ function App() {
         </div>
       )}
 
-      {view === "selectTime" && selectedService && selectedMaster && (
-        <SelectTime
+      {view === "selectMaster" && selectedService && (
+        <SelectMaster
           user={user}
           service={selectedService}
-          master={selectedMaster}
-          onBack={() => setView("selectMaster")}
-          onGoToAppointments={() => setView("myAppointments")}
+          onBack={() => setView("services")}
+          onSelectMaster={(master) => {
+            console.log("🟢 Обрано майстра:", master);
+            setSelectedMaster(master);
+            setView("selectTime");
+          }}
         />
       )}
 
@@ -143,6 +146,7 @@ function App() {
           service={selectedService}
           master={selectedMaster}
           onBack={() => setView("selectMaster")}
+          onGoToAppointments={() => setView("myAppointments")}
         />
       )}
 
