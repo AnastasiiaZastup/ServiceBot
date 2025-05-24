@@ -243,13 +243,13 @@ fastify.get(
 
       const { rows: appointments } = await client.query(
         `
-        SELECT appointments.*, services.title AS service_title, users.name AS master_name
-        FROM appointments
-        JOIN services ON appointments.service_id = services.id
-        JOIN users ON appointments.master_id = users.id
-        WHERE appointments.user_id = $1
-        ORDER BY appointments.date_time
-        `,
+  SELECT appointments.*, services.name AS service_title, users.name AS master_name
+  FROM appointments
+  JOIN services ON appointments.service_id = services.id
+  JOIN users ON appointments.master_id = users.id
+  WHERE appointments.user_id = $1
+  ORDER BY appointments.date_time
+  `,
         [user_id]
       );
 
