@@ -1,4 +1,3 @@
-// pages/SelectTime.jsx
 import React from "react";
 
 const timeOptions = [
@@ -8,7 +7,13 @@ const timeOptions = [
   "2025-05-21T14:00:00",
 ];
 
-export default function SelectTime({ user, service, master, onBack }) {
+export default function SelectTime({
+  user,
+  service,
+  master,
+  onBack,
+  onGoToAppointments,
+}) {
   const handleSelectTime = async (date_time) => {
     try {
       const res = await fetch(
@@ -28,14 +33,14 @@ export default function SelectTime({ user, service, master, onBack }) {
       const data = await res.json();
 
       if (res.ok) {
-        alert("✅ Запис створено!");
-        window.Telegram.WebApp.close(); // закриває мініапп
+        alert("✅ Ви успішно записались!");
+        onGoToAppointments(); // переходить до "Мої записи"
       } else {
         alert("🚫 Помилка: " + data.error);
       }
     } catch (err) {
-      console.error("Помилка створення запису:", err);
-      alert("🚫 Помилка запису.");
+      console.error("❌ Помилка створення запису:", err);
+      alert("🚫 Не вдалося створити запис.");
     }
   };
 
@@ -45,10 +50,23 @@ export default function SelectTime({ user, service, master, onBack }) {
         Обери час для <br />
         {service.name} з {master.name}
       </h2>
-      <button onClick={onBack}>⬅️ Назад</button>
+
+      <button
+        onClick={onBack}
+        style={{
+          marginBottom: "16px",
+          padding: "8px 16px",
+          backgroundColor: "#eee",
+          borderRadius: "8px",
+          cursor: "pointer",
+        }}
+      >
+        ⬅️ Назад
+      </button>
+
       <ul style={{ listStyle: "none", padding: 0 }}>
         {timeOptions.map((time) => (
-          <li key={time} style={{ margin: "12px 0" }}>
+          <li key={time} style={{ marginBottom: "12px" }}>
             <button
               onClick={() => handleSelectTime(time)}
               style={{
