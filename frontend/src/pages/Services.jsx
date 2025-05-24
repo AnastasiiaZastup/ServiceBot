@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 
-export default function Services({ onSelectService }) {
+export default function Services({ onSelectService, category }) {
   const [services, setServices] = useState([]);
 
   useEffect(() => {
     const fetchServices = async () => {
       try {
         const res = await fetch(
-          "https://service-bot-backend.onrender.com/services"
+          `https://service-bot-backend.onrender.com/services-by-category/${category.id}`
         );
         const data = await res.json();
         setServices(data.services || []);
@@ -17,11 +17,11 @@ export default function Services({ onSelectService }) {
     };
 
     fetchServices();
-  }, []);
+  }, [category]);
 
   return (
     <div style={{ padding: "16px" }}>
-      <h2>Список послуг</h2>
+      <h2>Послуги категорії: {category.name}</h2>
       {services.length === 0 ? (
         <p>Послуги не знайдено.</p>
       ) : (

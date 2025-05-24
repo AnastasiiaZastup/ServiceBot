@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Register from "./pages/Register.jsx";
+import SelectCategory from "./pages/SelectCategory.jsx";
 import Services from "./pages/Services.jsx";
 import SelectMaster from "./pages/SelectMaster.jsx";
 import SelectTime from "./pages/SelectTime.jsx";
@@ -9,6 +10,8 @@ function App() {
   const [user, setUser] = useState(null);
   const [view, setView] = useState("register");
   const [telegramUser, setTelegramUser] = useState(null);
+
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedMaster, setSelectedMaster] = useState(null);
 
@@ -39,7 +42,7 @@ function App() {
       const data = await res.json();
       console.log("🟢 Зареєстрований користувач:", data.user);
       setUser(data.user);
-      setView("services");
+      setView("category"); // Переходимо на вибір категорії
     } catch (err) {
       console.error("❌ Помилка реєстрації:", err);
       alert("Не вдалося зареєструватися.");
@@ -71,11 +74,23 @@ function App() {
         </div>
       )}
 
-      {view === "services" && user && (
+      {view === "category" && (
+        <SelectCategory
+          onSelectCategory={(category) => {
+            console.log("🟢 Обрано категорію:", category);
+            setSelectedCategory(category);
+            setView("services");
+          }}
+        />
+      )}
+
+      {view === "services" && user && selectedCategory && (
         <div style={{ padding: "16px" }}>
           <Services
             user={user}
+            category={selectedCategory}
             onSelectService={(service) => {
+              console.log("🟡 Обрана послуга:", service);
               setSelectedService(service);
               setView("selectMaster");
             }}

@@ -332,6 +332,37 @@ fastify.get(
   }
 );
 
+fastify.get("/categories", async (req, reply) => {
+  try {
+    const client = await fastify.pg.connect();
+    const { rows } = await client.query("SELECT * FROM categories");
+    client.release();
+
+    return reply.code(200).send({ categories: rows });
+  } catch (err) {
+    console.error("Error fetching categories:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
+fastify.get("/services-by-category/:category_id", async (req, reply) => {
+  const { category_id } = req.params;
+
+  try {
+    const client = await fastify.pg.connect();
+    const { rows } = await client.query(
+      "SELECT * FROM services WHERE category_id = $1",
+      [category_id]
+    );
+    client.release();
+
+    return reply.code(200).send({ services: rows });
+  } catch (err) {
+    console.error("Error fetching services by category:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 // Запуск сервера
 const start = async () => {
   try {
