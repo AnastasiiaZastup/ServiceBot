@@ -86,11 +86,25 @@ function App() {
 
       {view === "services" && user && selectedCategory && (
         <div style={{ padding: "16px" }}>
+          <button
+            onClick={() => setView("category")}
+            style={{
+              marginBottom: "16px",
+              padding: "8px 16px",
+              backgroundColor: "#2b2b2b",
+              color: "#fff",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            ⬅️ Назад до категорій
+          </button>
+
           <Services
             user={user}
             category={selectedCategory}
             onSelectService={(service) => {
-              console.log("🟡 Обрана послуга:", service);
               setSelectedService(service);
               setView("selectMaster");
             }}
