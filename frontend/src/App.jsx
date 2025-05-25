@@ -152,7 +152,7 @@ function App() {
       )}
 
       {view === "myAppointments" && user && (
-        <MyAppointments user={user} onBack={() => setView("services")} />
+        <MyAppointments user={user} onBack={() => setView("category")} />
       )}
     </>
   );

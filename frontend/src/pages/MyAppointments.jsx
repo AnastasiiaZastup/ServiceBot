@@ -60,7 +60,7 @@ export default function MyAppointments({ user, onBack }) {
               <strong>{a.service_title}</strong> <br />
               👩‍🎨 Майстер: {a.master_name} <br />
               🕒 Час:{" "}
-              {new Date(a.date_time).toLocaleString("uk-UA", {
+              {new Date(`${a.date}T${a.time}`).toLocaleString("uk-UA", {
                 dateStyle: "short",
                 timeStyle: "short",
               })}
