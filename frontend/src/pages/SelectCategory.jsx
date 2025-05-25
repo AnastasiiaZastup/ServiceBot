@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
 
-export default function SelectCategory({ onSelectCategory }) {
+export default function SelectCategory({
+  onSelectCategory,
+  onViewAppointments,
+}) {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -27,6 +30,7 @@ export default function SelectCategory({ onSelectCategory }) {
   return (
     <div style={{ padding: "16px" }}>
       <h2>Оберіть категорію послуг:</h2>
+
       <ul style={{ listStyle: "none", padding: 0 }}>
         {categories.map((cat) => (
           <li key={cat.id} style={{ marginBottom: "12px" }}>
@@ -46,6 +50,22 @@ export default function SelectCategory({ onSelectCategory }) {
           </li>
         ))}
       </ul>
+
+      {/* 🔽 Додана кнопка "Мої записи" */}
+      <button
+        onClick={onViewAppointments}
+        style={{
+          marginTop: "20px",
+          padding: "10px 20px",
+          backgroundColor: "#10b981",
+          color: "#fff",
+          border: "none",
+          borderRadius: "8px",
+          cursor: "pointer",
+        }}
+      >
+        📅 Мої записи
+      </button>
     </div>
   );
 }

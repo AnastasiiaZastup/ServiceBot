@@ -81,6 +81,7 @@ function App() {
             setSelectedCategory(category);
             setView("services");
           }}
+          onViewAppointments={() => setView("myAppointments")}
         />
       )}
 
