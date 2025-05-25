@@ -252,15 +252,17 @@ fastify.get("/masters-by-service/:serviceId", async (req, reply) => {
 
   try {
     const client = await fastify.pg.connect();
+
     const { rows } = await client.query(
       `
-      SELECT u.id, u.name, u.username, u.phone
+      SELECT u.id, u.name, u.username, u.phone, u.telegram_id
       FROM users u
       JOIN masters_services ms ON ms.master_id = u.id
       WHERE ms.service_id = $1 AND u.role = 'master'
       `,
       [serviceId]
     );
+
     client.release();
     return reply.send({ masters: rows });
   } catch (err) {
