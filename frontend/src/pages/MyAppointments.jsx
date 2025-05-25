@@ -25,10 +25,14 @@ export default function MyAppointments({ user, onBack }) {
   const formatDateTime = (date, time) => {
     try {
       if (!date || !time) return "❌ Невідомо";
+
+      const datePart = new Date(date).toISOString().split("T")[0]; // Отримаємо YYYY-MM-DD
       const normalizedTime =
         time.length === 5 ? `${time}:00` : time.slice(0, 8);
-      const isoString = `${date}T${normalizedTime}`;
+
+      const isoString = `${datePart}T${normalizedTime}`;
       const formatted = new Date(isoString);
+
       return isNaN(formatted)
         ? "❌ Невідомо"
         : formatted.toLocaleString("uk", {
