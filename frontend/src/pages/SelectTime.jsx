@@ -16,11 +16,12 @@ export default function SelectTime({
 }) {
   const [bookedSlots, setBookedSlots] = useState([]);
 
+  // Отримуємо записи для майстра за його ID
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
         const res = await fetch(
-          `https://service-bot-backend.onrender.com/master/appointments/${master.telegram_id}`
+          `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
         );
         const data = await res.json();
         setBookedSlots(
@@ -32,8 +33,9 @@ export default function SelectTime({
     };
 
     fetchAppointments();
-  }, [master.telegram_id]);
+  }, [master.id]);
 
+  // Фільтруємо доступні слоти
   const availableTimes = timeOptions.filter(
     (time) => !bookedSlots.includes(time)
   );
@@ -88,28 +90,32 @@ export default function SelectTime({
         ⬅️ Назад
       </button>
 
-      <ul style={{ listStyle: "none", padding: 0 }}>
-        {availableTimes.map((time) => (
-          <li key={time} style={{ marginBottom: "12px" }}>
-            <button
-              onClick={() => handleSelectTime(time)}
-              style={{
-                padding: "10px 20px",
-                borderRadius: "8px",
-                border: "none",
-                backgroundColor: "#22c55e",
-                color: "white",
-                cursor: "pointer",
-              }}
-            >
-              {new Date(time).toLocaleString("uk-UA", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })}
-            </button>
-          </li>
-        ))}
-      </ul>
+      {availableTimes.length === 0 ? (
+        <p>Усі слоти зайняті.</p>
+      ) : (
+        <ul style={{ listStyle: "none", padding: 0 }}>
+          {availableTimes.map((time) => (
+            <li key={time} style={{ marginBottom: "12px" }}>
+              <button
+                onClick={() => handleSelectTime(time)}
+                style={{
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  border: "none",
+                  backgroundColor: "#22c55e",
+                  color: "white",
+                  cursor: "pointer",
+                }}
+              >
+                {new Date(time).toLocaleString("uk", {
+                  dateStyle: "short",
+                  timeStyle: "short",
+                })}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

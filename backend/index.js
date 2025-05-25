@@ -247,6 +247,27 @@ fastify.get(
   }
 );
 
+fastify.get("/appointments/master/:id", async (req, reply) => {
+  const master_id = req.params.id;
+
+  try {
+    const client = await fastify.pg.connect();
+    const { rows } = await client.query(
+      `
+      SELECT * FROM appointments
+      WHERE master_id = $1
+      `,
+      [master_id]
+    );
+    client.release();
+
+    return reply.code(200).send({ appointments: rows });
+  } catch (err) {
+    console.error("Error fetching master appointments:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 fastify.get("/masters-by-service/:serviceId", async (req, reply) => {
   const { serviceId } = req.params;
 

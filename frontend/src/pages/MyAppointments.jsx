@@ -24,7 +24,8 @@ export default function MyAppointments({ user, onBack }) {
 
   const formatDateTime = (date, time) => {
     try {
-      const isoString = `${date}T${time.slice(0, 8)}`;
+      const trimmedTime = time?.slice(0, 8);
+      const isoString = `${date}T${trimmedTime}`;
       return new Date(isoString).toLocaleString("uk", {
         dateStyle: "short",
         timeStyle: "short",
