@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 const timeOptions = [
   "2025-05-21T10:00:00",
@@ -14,6 +14,30 @@ export default function SelectTime({
   onBack,
   onGoToAppointments,
 }) {
+  const [bookedSlots, setBookedSlots] = useState([]);
+
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      try {
+        const res = await fetch(
+          `https://service-bot-backend.onrender.com/master/appointments/${master.telegram_id}`
+        );
+        const data = await res.json();
+        setBookedSlots(
+          data.appointments.map((a) => `${a.date}T${a.time.slice(0, 8)}`)
+        );
+      } catch (err) {
+        console.error("❌ Помилка отримання записів майстра:", err);
+      }
+    };
+
+    fetchAppointments();
+  }, [master.telegram_id]);
+
+  const availableTimes = timeOptions.filter(
+    (time) => !bookedSlots.includes(time)
+  );
+
   const handleSelectTime = async (date_time) => {
     try {
       const res = await fetch(
@@ -34,7 +58,7 @@ export default function SelectTime({
 
       if (res.ok) {
         alert("✅ Ви успішно записались!");
-        onGoToAppointments(); // переходить до "Мої записи"
+        onGoToAppointments();
       } else {
         alert("🚫 Помилка: " + data.error);
       }
@@ -65,7 +89,7 @@ export default function SelectTime({
       </button>
 
       <ul style={{ listStyle: "none", padding: 0 }}>
-        {timeOptions.map((time) => (
+        {availableTimes.map((time) => (
           <li key={time} style={{ marginBottom: "12px" }}>
             <button
               onClick={() => handleSelectTime(time)}

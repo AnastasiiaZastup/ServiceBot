@@ -11,7 +11,6 @@ export default function MyAppointments({ user, onBack }) {
           `https://service-bot-backend.onrender.com/appointments/${user.telegram_id}`
         );
         const data = await res.json();
-        console.log("📅 Отримані записи:", data);
         setAppointments(data.appointments || []);
       } catch (err) {
         console.error("❌ Помилка отримання записів:", err);
@@ -22,6 +21,18 @@ export default function MyAppointments({ user, onBack }) {
 
     fetchAppointments();
   }, [user.telegram_id]);
+
+  const formatDateTime = (date, time) => {
+    try {
+      const isoString = `${date}T${time.slice(0, 8)}`;
+      return new Date(isoString).toLocaleString("uk", {
+        dateStyle: "short",
+        timeStyle: "short",
+      });
+    } catch {
+      return "❌ Невідомо";
+    }
+  };
 
   if (loading) return <p>Завантаження записів...</p>;
 
@@ -59,11 +70,7 @@ export default function MyAppointments({ user, onBack }) {
             >
               <strong>{a.service_title}</strong> <br />
               👩‍🎨 Майстер: {a.master_name} <br />
-              🕒 Час:{" "}
-              {new Date(`${a.date}T${a.time}`).toLocaleString("uk-UA", {
-                dateStyle: "short",
-                timeStyle: "short",
-              })}
+              🕒 Час: {formatDateTime(a.date, a.time)}
             </li>
           ))}
         </ul>
