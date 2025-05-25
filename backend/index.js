@@ -4,31 +4,19 @@ import fastifyCors from "@fastify/cors";
 import dotenv from "dotenv";
 
 dotenv.config();
-
-// 🔎 Перевірка чи доступна змінна
 console.log("✅ DATABASE_URL:", process.env.DATABASE_URL);
 
 const fastify = Fastify({ logger: true });
 
-// Дозволити запити з інших доменів (фронтенд)
-fastify.register(fastifyCors, {
-  origin: "*",
-});
+fastify.register(fastifyCors, { origin: "*" });
 
-// Ініціалізуємо підключення до бази даних
 fastify.register(fastifyPostgres, {
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false, // дозволити самопідписаний сертифікат (Render це дозволяє)
-  },
+  ssl: { rejectUnauthorized: false },
 });
-
-console.log("ENV DB URL:", process.env.DATABASE_URL);
-
 const roleCheck = (allowedRoles) => {
   return async (req, reply) => {
     const telegram_id = req.params.telegram_id || req.body?.telegram_id;
-
     if (!telegram_id) {
       return reply.code(400).send({ error: "telegram_id is required" });
     }
@@ -45,17 +33,14 @@ const roleCheck = (allowedRoles) => {
     }
 
     const userRole = rows[0].role;
-
     if (!allowedRoles.includes(userRole)) {
       return reply.code(403).send({ error: "Access denied" });
     }
   };
 };
 
-fastify.get("/ping", async (request, reply) => {
-  return { message: "pong" };
-});
-// /test-db
+fastify.get("/ping", async () => ({ message: "pong" }));
+
 fastify.get("/test-db", async (req, reply) => {
   try {
     const client = await fastify.pg.connect();
@@ -68,7 +53,6 @@ fastify.get("/test-db", async (req, reply) => {
   }
 });
 
-// Реєстрація користувача
 fastify.post("/user/register", async (req, reply) => {
   const { telegram_id, name, username, phone } = req.body;
 
@@ -113,7 +97,6 @@ fastify.post("/user/register", async (req, reply) => {
   }
 });
 
-// Отримати користувача
 fastify.get("/user/:telegram_id", async (req, reply) => {
   const telegram_id = req.params.telegram_id;
 
@@ -136,7 +119,6 @@ fastify.get("/user/:telegram_id", async (req, reply) => {
   }
 });
 
-// Отримати всі послуги
 fastify.get("/services", async (req, reply) => {
   try {
     const client = await fastify.pg.connect();
@@ -149,7 +131,6 @@ fastify.get("/services", async (req, reply) => {
   }
 });
 
-// Отримати послугу по id
 fastify.get("/services/:id", async (req, reply) => {
   const id = req.params.id;
 
@@ -172,7 +153,6 @@ fastify.get("/services/:id", async (req, reply) => {
   }
 });
 
-// Створити запис на послугу
 fastify.post("/appointments", async (req, reply) => {
   const { telegram_id, service_id, master_id, date_time } = req.body;
 
@@ -195,9 +175,13 @@ fastify.post("/appointments", async (req, reply) => {
 
     const user_id = userRows[0].id;
 
+    const dateObj = new Date(date_time);
+    const date = dateObj.toISOString().split("T")[0];
+    const time = dateObj.toTimeString().split(" ")[0];
+
     const insertQuery = `
-      INSERT INTO appointments (user_id, master_id, service_id, date_time)
-      VALUES ($1, $2, $3, $4)
+      INSERT INTO appointments (user_id, master_id, service_id, date, time)
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *;
     `;
 
@@ -205,7 +189,8 @@ fastify.post("/appointments", async (req, reply) => {
       user_id,
       master_id,
       service_id,
-      date_time,
+      date,
+      time,
     ]);
 
     client.release();
@@ -219,7 +204,6 @@ fastify.post("/appointments", async (req, reply) => {
   }
 });
 
-// Отримати записи користувача (доступно клієнту)
 fastify.get(
   "/appointments/:telegram_id",
   { preHandler: roleCheck(["client"]) },
@@ -243,13 +227,13 @@ fastify.get(
 
       const { rows: appointments } = await client.query(
         `
-  SELECT appointments.*, services.name AS service_title, users.name AS master_name
-  FROM appointments
-  JOIN services ON appointments.service_id = services.id
-  JOIN users ON appointments.master_id = users.id
-  WHERE appointments.user_id = $1
-  ORDER BY appointments.date_time
-  `,
+        SELECT appointments.*, services.name AS service_title, users.name AS master_name
+        FROM appointments
+        JOIN services ON appointments.service_id = services.id
+        JOIN users ON appointments.master_id = users.id
+        WHERE appointments.user_id = $1
+        ORDER BY appointments.date, appointments.time
+        `,
         [user_id]
       );
 
@@ -263,13 +247,11 @@ fastify.get(
   }
 );
 
-// Отримати майстрів за ID послуги
 fastify.get("/masters-by-service/:serviceId", async (req, reply) => {
   const { serviceId } = req.params;
 
   try {
     const client = await fastify.pg.connect();
-
     const { rows } = await client.query(
       `
       SELECT u.id, u.name, u.username, u.phone
@@ -279,7 +261,6 @@ fastify.get("/masters-by-service/:serviceId", async (req, reply) => {
       `,
       [serviceId]
     );
-
     client.release();
     return reply.send({ masters: rows });
   } catch (err) {
@@ -288,7 +269,6 @@ fastify.get("/masters-by-service/:serviceId", async (req, reply) => {
   }
 });
 
-// Отримати записи майстра (доступно майстру)
 fastify.get(
   "/master/appointments/:telegram_id",
   { preHandler: roleCheck(["master"]) },
@@ -312,12 +292,12 @@ fastify.get(
 
       const { rows: appointments } = await client.query(
         `
-        SELECT appointments.*, services.title AS service_title, users.name AS client_name
+        SELECT appointments.*, services.name AS service_title, users.name AS client_name
         FROM appointments
         JOIN services ON appointments.service_id = services.id
         JOIN users ON appointments.user_id = users.id
         WHERE appointments.master_id = $1
-        ORDER BY appointments.date_time
+        ORDER BY appointments.date, appointments.time
         `,
         [master_id]
       );
@@ -337,7 +317,6 @@ fastify.get("/categories", async (req, reply) => {
     const client = await fastify.pg.connect();
     const { rows } = await client.query("SELECT * FROM categories");
     client.release();
-
     return reply.code(200).send({ categories: rows });
   } catch (err) {
     console.error("Error fetching categories:", err);
@@ -355,7 +334,6 @@ fastify.get("/services-by-category/:category_id", async (req, reply) => {
       [category_id]
     );
     client.release();
-
     return reply.code(200).send({ services: rows });
   } catch (err) {
     console.error("Error fetching services by category:", err);
@@ -363,7 +341,6 @@ fastify.get("/services-by-category/:category_id", async (req, reply) => {
   }
 });
 
-// Запуск сервера
 const start = async () => {
   try {
     await fastify.listen({ port: 3000, host: "0.0.0.0" });
