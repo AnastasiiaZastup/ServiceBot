@@ -16,7 +16,6 @@ export default function SelectTime({
 }) {
   const [bookedSlots, setBookedSlots] = useState([]);
 
-  // Отримуємо записи для майстра за його ID
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -35,7 +34,6 @@ export default function SelectTime({
     fetchAppointments();
   }, [master.id]);
 
-  // Фільтруємо доступні слоти
   const availableTimes = timeOptions.filter(
     (time) => !bookedSlots.includes(time)
   );
@@ -60,6 +58,7 @@ export default function SelectTime({
 
       if (res.ok) {
         alert("✅ Ви успішно записались!");
+        setBookedSlots((prev) => [...prev, date_time]); // ⬅️ додаємо до зайнятих
         onGoToAppointments();
       } else {
         alert("🚫 Помилка: " + data.error);

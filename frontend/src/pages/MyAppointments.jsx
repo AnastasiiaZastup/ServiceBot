@@ -24,12 +24,17 @@ export default function MyAppointments({ user, onBack }) {
 
   const formatDateTime = (date, time) => {
     try {
-      const trimmedTime = time?.slice(0, 8);
-      const isoString = `${date}T${trimmedTime}`;
-      return new Date(isoString).toLocaleString("uk", {
-        dateStyle: "short",
-        timeStyle: "short",
-      });
+      if (!date || !time) return "❌ Невідомо";
+      const normalizedTime =
+        time.length === 5 ? `${time}:00` : time.slice(0, 8);
+      const isoString = `${date}T${normalizedTime}`;
+      const formatted = new Date(isoString);
+      return isNaN(formatted)
+        ? "❌ Невідомо"
+        : formatted.toLocaleString("uk", {
+            dateStyle: "short",
+            timeStyle: "short",
+          });
     } catch {
       return "❌ Невідомо";
     }
