@@ -16,8 +16,8 @@ export default function SelectTime({
 }) {
   const [bookedSlots, setBookedSlots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [justBooked, setJustBooked] = useState(null);
 
-  // ✅ Отримуємо вже зайняті слоти для майстра
   const fetchAppointments = async () => {
     setLoading(true);
     try {
@@ -42,12 +42,10 @@ export default function SelectTime({
     fetchAppointments();
   }, [master.id]);
 
-  // 🧠 Фільтруємо доступні слоти
   const availableTimes = timeOptions.filter(
     (time) => !bookedSlots.includes(time)
   );
 
-  // ✅ Обробка вибору часу
   const handleSelectTime = async (date_time) => {
     try {
       const res = await fetch(
@@ -67,12 +65,8 @@ export default function SelectTime({
       const data = await res.json();
 
       if (res.ok) {
-        alert("✅ Ви успішно записались!");
-        // 🔁 одразу ховаємо слот локально
-        setBookedSlots((prev) => [...prev, date_time]);
-
-        // 👉 або одразу перейти на сторінку "Мої записи"
-        onGoToAppointments();
+        setBookedSlots((prev) => [...prev, date_time]); // миттєве приховання
+        setJustBooked(date_time); // показуємо повідомлення
       } else {
         alert("🚫 Помилка: " + data.error);
       }
@@ -101,6 +95,31 @@ export default function SelectTime({
       >
         ⬅️ Назад
       </button>
+
+      {justBooked && (
+        <div style={{ marginBottom: "16px", color: "#16a34a" }}>
+          ✅ Ви записались на:{" "}
+          {new Date(justBooked).toLocaleString("uk", {
+            dateStyle: "short",
+            timeStyle: "short",
+          })}
+          <br />
+          <button
+            onClick={onGoToAppointments}
+            style={{
+              marginTop: "12px",
+              padding: "10px 20px",
+              backgroundColor: "#0d9488",
+              color: "white",
+              border: "none",
+              borderRadius: "8px",
+              cursor: "pointer",
+            }}
+          >
+            📅 Перейти до моїх записів
+          </button>
+        </div>
+      )}
 
       {loading ? (
         <p>Завантаження слотів...</p>
