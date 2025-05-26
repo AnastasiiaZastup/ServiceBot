@@ -30,6 +30,7 @@ export default function SelectTime({
         (a) => `${a.date}T${a.time.slice(0, 8)}`
       );
 
+      console.log("📥 Заброньовані слоти:", slots);
       setBookedSlots(slots);
     } catch (err) {
       console.error("❌ Помилка отримання записів майстра:", err);
@@ -39,10 +40,19 @@ export default function SelectTime({
   };
 
   useEffect(() => {
-    fetchAppointments();
-  }, [master.id]);
+    if (master?.id) {
+      fetchAppointments();
+    }
+  }, [master?.id]);
 
   const handleSelectTime = async (date_time) => {
+    if (!user || !service || !master) {
+      console.error("❗️Немає даних для запису:", { user, service, master });
+      return;
+    }
+
+    console.log("▶️ Спроба запису на:", date_time);
+
     try {
       const res = await fetch(
         "https://service-bot-backend.onrender.com/appointments",
@@ -58,30 +68,22 @@ export default function SelectTime({
         }
       );
 
-      let data;
+      let data = {};
       try {
         data = await res.json();
       } catch {
-        data = { error: "Невідома помилка" };
+        console.warn("⚠️ Не вдалося розпарсити JSON");
       }
 
       if (res.ok) {
+        console.log("✅ Успішно записано:", data);
         setJustBooked(date_time);
-        await fetchAppointments();
+        await fetchAppointments(); // оновити слоти
       } else {
-        console.error(
-          "🚫 Статус помилки:",
-          res.status,
-          data?.error || "Невідомо"
-        );
-      }
-
-      if (res.ok) {
-        setJustBooked(date_time);
-        await fetchAppointments(); // Оновити список після запису
+        console.warn("🚫 Сервер повернув помилку:", res.status, data?.error);
       }
     } catch (err) {
-      console.error("❌ Помилка створення запису:", err);
+      console.error("❌ Помилка запиту:", err);
     }
   };
 
