@@ -42,10 +42,6 @@ export default function SelectTime({
     fetchAppointments();
   }, [master.id]);
 
-  const availableTimes = timeOptions.filter(
-    (time) => !bookedSlots.includes(time)
-  );
-
   const handleSelectTime = async (date_time) => {
     try {
       const res = await fetch(
@@ -62,17 +58,30 @@ export default function SelectTime({
         }
       );
 
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        data = { error: "Невідома помилка" };
+      }
 
       if (res.ok) {
         setJustBooked(date_time);
-        await fetchAppointments(); // 🔄 Оновлюємо список слотів
+        await fetchAppointments();
       } else {
-        alert("🚫 Помилка: " + data.error);
+        console.error(
+          "🚫 Статус помилки:",
+          res.status,
+          data?.error || "Невідомо"
+        );
+      }
+
+      if (res.ok) {
+        setJustBooked(date_time);
+        await fetchAppointments(); // Оновити список після запису
       }
     } catch (err) {
       console.error("❌ Помилка створення запису:", err);
-      alert("🚫 Не вдалося створити запис.");
     }
   };
 
@@ -123,30 +132,32 @@ export default function SelectTime({
 
       {loading ? (
         <p>Завантаження слотів...</p>
-      ) : availableTimes.length === 0 ? (
-        <p>Усі слоти зайняті.</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
-          {availableTimes.map((time) => (
-            <li key={time} style={{ marginBottom: "12px" }}>
-              <button
-                onClick={() => handleSelectTime(time)}
-                style={{
-                  padding: "10px 20px",
-                  borderRadius: "8px",
-                  border: "none",
-                  backgroundColor: "#22c55e",
-                  color: "white",
-                  cursor: "pointer",
-                }}
-              >
-                {new Date(time).toLocaleString("uk", {
-                  dateStyle: "short",
-                  timeStyle: "short",
-                })}
-              </button>
-            </li>
-          ))}
+          {timeOptions.map((time) => {
+            const isBooked = bookedSlots.includes(time);
+            return (
+              <li key={time} style={{ marginBottom: "12px" }}>
+                <button
+                  disabled={isBooked}
+                  onClick={() => handleSelectTime(time)}
+                  style={{
+                    padding: "10px 20px",
+                    borderRadius: "8px",
+                    border: "none",
+                    backgroundColor: isBooked ? "#d1d5db" : "#22c55e",
+                    color: isBooked ? "#6b7280" : "white",
+                    cursor: isBooked ? "not-allowed" : "pointer",
+                  }}
+                >
+                  {new Date(time).toLocaleString("uk", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>
