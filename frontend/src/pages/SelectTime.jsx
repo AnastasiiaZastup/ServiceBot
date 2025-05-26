@@ -1,6 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const timeOptions = [
   "2025-05-21T10:00:00",
@@ -33,18 +31,17 @@ export default function SelectTime({
       );
 
       setBookedSlots(slots);
+      console.log("📌 Оновлено слоти:", slots);
     } catch (err) {
-      console.error("Помилка отримання записів майстра:", err);
-      toast.error("Не вдалося завантажити слоти ");
+      console.error("❌ Помилка отримання записів майстра:", err);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!master?.id) return;
     fetchAppointments();
-  }, [master?.id]);
+  }, [master.id]);
 
   const handleSelectTime = async (date_time) => {
     try {
@@ -65,26 +62,25 @@ export default function SelectTime({
       const data = await res.json();
 
       if (res.status === 201) {
+        // ✅ Успішно створено
         setJustBooked(date_time);
         setBookedSlots((prev) => [...prev, date_time]);
-        toast.success("✅ Запис успішно створено!");
         await fetchAppointments();
-        setTimeout(() => setJustBooked(null), 5000); // автоочистка повідомлення
       } else if (res.status === 409) {
-        toast.warn("⛔️ Цей слот вже зайнятий.");
+        // ⛔️ Конфлікт — слот зайнятий
+        console.warn("‼️ Слот уже зайнятий:", date_time);
       } else {
-        toast.error("🚫 Невідома помилка: " + (data?.error || res.status));
+        // ❌ Інша помилка
+        alert("🚫 Помилка: " + (data?.error || res.status));
       }
     } catch (err) {
       console.error("❌ Помилка створення запису:", err);
-      toast.error("🚫 Помилка при створенні запису.");
+      alert("🚫 Не вдалося створити запис.");
     }
   };
 
   return (
     <div style={{ padding: "16px" }}>
-      <ToastContainer position="top-center" autoClose={3000} />
-
       <h2>
         Обери час для <br />
         {service.name} з {master.name}
