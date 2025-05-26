@@ -43,10 +43,6 @@ export default function SelectTime({
   }, [master.id]);
 
   const handleSelectTime = async (date_time) => {
-    if (bookedSlots.includes(date_time)) {
-      return; // слот зайнятий — не виконуємо нічого
-    }
-
     try {
       const res = await fetch(
         "https://service-bot-backend.onrender.com/appointments",
@@ -62,12 +58,17 @@ export default function SelectTime({
         }
       );
 
+      const data = await res.json();
+
       if (res.ok) {
         setJustBooked(date_time);
-        await fetchAppointments();
+        await fetchAppointments(); // 🔄 Оновлюємо список слотів
+      } else {
+        alert("🚫 Помилка: " + data.error);
       }
     } catch (err) {
       console.error("❌ Помилка створення запису:", err);
+      alert("🚫 Не вдалося створити запис.");
     }
   };
 
@@ -122,16 +123,11 @@ export default function SelectTime({
         <ul style={{ listStyle: "none", padding: 0 }}>
           {timeOptions.map((time) => {
             const isBooked = bookedSlots.includes(time);
-            const formattedTime = new Date(time).toLocaleString("uk", {
-              dateStyle: "short",
-              timeStyle: "short",
-            });
-
             return (
               <li key={time} style={{ marginBottom: "12px" }}>
                 <button
+                  onClick={() => !isBooked && handleSelectTime(time)}
                   disabled={isBooked}
-                  onClick={() => handleSelectTime(time)}
                   style={{
                     padding: "10px 20px",
                     borderRadius: "8px",
@@ -141,7 +137,10 @@ export default function SelectTime({
                     cursor: isBooked ? "not-allowed" : "pointer",
                   }}
                 >
-                  {isBooked ? `${formattedTime} — Зайнято` : formattedTime}
+                  {new Date(time).toLocaleString("uk", {
+                    dateStyle: "short",
+                    timeStyle: "short",
+                  })}
                 </button>
               </li>
             );
