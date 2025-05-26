@@ -7,31 +7,37 @@ const timeOptions = [
   "2025-05-21T14:00:00",
 ];
 
-export default function SelectTime({ user, service, master, onBack }) {
+export default function SelectTime({
+  user,
+  service,
+  master,
+  onBack,
+  onGoToAppointments,
+}) {
   const [bookedSlots, setBookedSlots] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Отримуємо вже зайняті слоти для майстра
+  const fetchAppointments = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
+      );
+      const data = await res.json();
+
+      const slots = data.appointments.map(
+        (a) => `${a.date}T${a.time.slice(0, 8)}`
+      );
+
+      setBookedSlots(slots);
+    } catch (err) {
+      console.error("❌ Помилка отримання записів майстра:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchAppointments = async () => {
-      try {
-        const res = await fetch(
-          `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
-        );
-        const data = await res.json();
-
-        const slots = data.appointments.map(
-          (a) => `${a.date}T${a.time.slice(0, 8)}`
-        );
-
-        setBookedSlots(slots);
-      } catch (err) {
-        console.error("❌ Помилка отримання записів майстра:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchAppointments();
   }, [master.id]);
 
@@ -59,8 +65,8 @@ export default function SelectTime({ user, service, master, onBack }) {
 
       if (res.ok) {
         alert("✅ Ви успішно записались!");
-        setBookedSlots((prev) => [...prev, date_time]); // ⬅️ додаємо обраний слот до зайнятих
-        // onGoToAppointments(); // можеш активувати, якщо хочеш одразу перейти
+        await fetchAppointments(); // 🔁 оновлення після запису
+        onGoToAppointments(); // 👉 можна залишити або прибрати
       } else {
         alert("🚫 Помилка: " + data.error);
       }
