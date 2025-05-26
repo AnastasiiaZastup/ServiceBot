@@ -61,17 +61,13 @@ export default function SelectTime({
 
       const data = await res.json();
 
-      if (res.status === 201) {
-        // ✅ Успішно створено
+      if (res.ok) {
         setJustBooked(date_time);
+        // 💡 Одразу додаємо слот до bookedSlots
         setBookedSlots((prev) => [...prev, date_time]);
-        await fetchAppointments();
-      } else if (res.status === 409) {
-        // ⛔️ Конфлікт — слот зайнятий
-        console.warn("‼️ Слот уже зайнятий:", date_time);
+        await fetchAppointments(); // Потім ще оновимо з бекенду
       } else {
-        // ❌ Інша помилка
-        alert("🚫 Помилка: " + (data?.error || res.status));
+        alert("🚫 Помилка: " + data.error);
       }
     } catch (err) {
       console.error("❌ Помилка створення запису:", err);
