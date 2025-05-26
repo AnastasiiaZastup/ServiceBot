@@ -10,7 +10,7 @@ bot.start((ctx) => {
           {
             text: "Відкрити Mini App",
             web_app: {
-              url: "https://service-bot-ten.vercel.app", // твій фронт
+              url: "https://service-bot-ten.vercel.app",
             },
           },
         ],
@@ -19,7 +19,6 @@ bot.start((ctx) => {
   });
 });
 
-// Опціонально: додай кнопку в меню (працює на мобілках)
 bot.command("menu", async (ctx) => {
   await ctx.setChatMenuButton({
     type: "web_app",

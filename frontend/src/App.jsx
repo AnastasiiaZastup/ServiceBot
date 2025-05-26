@@ -42,7 +42,7 @@ function App() {
       const data = await res.json();
       console.log("🟢 Зареєстрований користувач:", data.user);
       setUser(data.user);
-      setView("category"); // Переходимо на вибір категорії
+      setView("category");
     } catch (err) {
       console.error("❌ Помилка реєстрації:", err);
       alert("Не вдалося зареєструватися.");

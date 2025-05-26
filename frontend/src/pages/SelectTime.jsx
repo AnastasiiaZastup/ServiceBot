@@ -7,15 +7,11 @@ const timeOptions = [
   "2025-05-21T14:00:00",
 ];
 
-export default function SelectTime({
-  user,
-  service,
-  master,
-  onBack,
-  onGoToAppointments,
-}) {
+export default function SelectTime({ user, service, master, onBack }) {
   const [bookedSlots, setBookedSlots] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  // Отримуємо вже зайняті слоти для майстра
   useEffect(() => {
     const fetchAppointments = async () => {
       try {
@@ -23,11 +19,16 @@ export default function SelectTime({
           `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
         );
         const data = await res.json();
-        setBookedSlots(
-          data.appointments.map((a) => `${a.date}T${a.time.slice(0, 8)}`)
+
+        const slots = data.appointments.map(
+          (a) => `${a.date}T${a.time.slice(0, 8)}`
         );
+
+        setBookedSlots(slots);
       } catch (err) {
         console.error("❌ Помилка отримання записів майстра:", err);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -58,8 +59,8 @@ export default function SelectTime({
 
       if (res.ok) {
         alert("✅ Ви успішно записались!");
-        setBookedSlots((prev) => [...prev, date_time]); // ⬅️ додаємо до зайнятих
-        onGoToAppointments();
+        setBookedSlots((prev) => [...prev, date_time]); // ⬅️ додаємо обраний слот до зайнятих
+        // onGoToAppointments(); // можеш активувати, якщо хочеш одразу перейти
       } else {
         alert("🚫 Помилка: " + data.error);
       }
@@ -89,7 +90,9 @@ export default function SelectTime({
         ⬅️ Назад
       </button>
 
-      {availableTimes.length === 0 ? (
+      {loading ? (
+        <p>Завантаження слотів...</p>
+      ) : availableTimes.length === 0 ? (
         <p>Усі слоти зайняті.</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
