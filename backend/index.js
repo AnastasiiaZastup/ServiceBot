@@ -179,6 +179,18 @@ fastify.post("/appointments", async (req, reply) => {
     const date = dateObj.toISOString().split("T")[0];
     const time = dateObj.toTimeString().split(" ")[0];
 
+    // ✅ Перевірка на конфлікт
+    const conflictCheck = await client.query(
+      `SELECT * FROM appointments
+       WHERE master_id = $1 AND date = $2 AND time = $3`,
+      [master_id, date, time]
+    );
+
+    if (conflictCheck.rows.length > 0) {
+      client.release();
+      return reply.code(409).send({ error: "Цей слот вже зайнятий." });
+    }
+
     const insertQuery = `
       INSERT INTO appointments (user_id, master_id, service_id, date, time)
       VALUES ($1, $2, $3, $4, $5)

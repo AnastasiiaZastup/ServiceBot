@@ -65,8 +65,8 @@ export default function SelectTime({
       const data = await res.json();
 
       if (res.ok) {
-        setBookedSlots((prev) => [...prev, date_time]); // миттєве приховання
-        setJustBooked(date_time); // показуємо повідомлення
+        setJustBooked(date_time);
+        await fetchAppointments(); // 🔄 Оновлюємо список слотів
       } else {
         alert("🚫 Помилка: " + data.error);
       }
