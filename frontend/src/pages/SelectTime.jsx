@@ -35,7 +35,7 @@ export default function SelectTime({
       setBookedSlots(slots);
     } catch (err) {
       console.error("❌ Помилка отримання записів майстра:", err);
-      toast.error("Не вдалося завантажити слоти 😓");
+      toast.error("Не вдалося завантажити слоти ");
     } finally {
       setLoading(false);
     }
