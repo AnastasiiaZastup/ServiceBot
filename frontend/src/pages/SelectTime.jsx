@@ -17,6 +17,7 @@ export default function SelectTime({
   const [bookedSlots, setBookedSlots] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // ✅ Отримуємо вже зайняті слоти для майстра
   const fetchAppointments = async () => {
     setLoading(true);
     try {
@@ -41,10 +42,12 @@ export default function SelectTime({
     fetchAppointments();
   }, [master.id]);
 
+  // 🧠 Фільтруємо доступні слоти
   const availableTimes = timeOptions.filter(
     (time) => !bookedSlots.includes(time)
   );
 
+  // ✅ Обробка вибору часу
   const handleSelectTime = async (date_time) => {
     try {
       const res = await fetch(
@@ -65,8 +68,11 @@ export default function SelectTime({
 
       if (res.ok) {
         alert("✅ Ви успішно записались!");
-        await fetchAppointments(); // 🔁 оновлення після запису
-        onGoToAppointments(); // 👉 можна залишити або прибрати
+        // 🔁 одразу ховаємо слот локально
+        setBookedSlots((prev) => [...prev, date_time]);
+
+        // 👉 або одразу перейти на сторінку "Мої записи"
+        onGoToAppointments();
       } else {
         alert("🚫 Помилка: " + data.error);
       }
