@@ -31,6 +31,7 @@ export default function SelectTime({
       );
 
       setBookedSlots(slots);
+      console.log("📌 Оновлено слоти:", slots);
     } catch (err) {
       console.error("❌ Помилка отримання записів майстра:", err);
     } finally {
@@ -62,7 +63,9 @@ export default function SelectTime({
 
       if (res.ok) {
         setJustBooked(date_time);
-        await fetchAppointments(); // 🔄 Оновлюємо список слотів
+        // 💡 Одразу додаємо слот до bookedSlots
+        setBookedSlots((prev) => [...prev, date_time]);
+        await fetchAppointments(); // Потім ще оновимо з бекенду
       } else {
         alert("🚫 Помилка: " + data.error);
       }
