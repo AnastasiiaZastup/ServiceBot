@@ -6,6 +6,7 @@ export default function MyAppointments({ user, onBack }) {
 
   useEffect(() => {
     const fetchAppointments = async () => {
+      setLoading(true);
       try {
         const res = await fetch(
           `https://service-bot-backend.onrender.com/appointments/${user.telegram_id}`
@@ -19,27 +20,22 @@ export default function MyAppointments({ user, onBack }) {
       }
     };
 
-    fetchAppointments();
+    if (user?.telegram_id) fetchAppointments();
   }, [user.telegram_id]);
 
   const formatDateTime = (date, time) => {
+    if (!date || !time) return "❌ Невідомо";
     try {
-      if (!date || !time) return "❌ Невідомо";
-
-      const datePart = new Date(date).toISOString().split("T")[0]; // Отримаємо YYYY-MM-DD
-      const normalizedTime =
-        time.length === 5 ? `${time}:00` : time.slice(0, 8);
-
-      const isoString = `${datePart}T${normalizedTime}`;
-      const formatted = new Date(isoString);
-
-      return isNaN(formatted)
-        ? "❌ Невідомо"
-        : formatted.toLocaleString("uk", {
-            dateStyle: "short",
-            timeStyle: "short",
-          });
-    } catch {
+      // Combine date and time as UTC to avoid offset issues
+      const isoString = `${date}T${time}${time.endsWith("Z") ? "" : "Z"}`;
+      const dateObj = new Date(isoString);
+      if (isNaN(dateObj)) return "❌ Невідомо";
+      return dateObj.toLocaleString("uk", {
+        dateStyle: "short",
+        timeStyle: "short",
+      });
+    } catch (err) {
+      console.error("❌ Помилка форматування дати/часу:", err);
       return "❌ Невідомо";
     }
   };
@@ -63,7 +59,6 @@ export default function MyAppointments({ user, onBack }) {
       >
         ⬅️ Назад
       </button>
-
       {appointments.length === 0 ? (
         <p>У вас поки немає записів.</p>
       ) : (
@@ -78,8 +73,10 @@ export default function MyAppointments({ user, onBack }) {
                 borderRadius: "8px",
               }}
             >
-              <strong>{a.service_title}</strong> <br />
-              👩‍🎨 Майстер: {a.master_name} <br />
+              <strong>{a.service_title}</strong>
+              <br />
+              👩‍🎨 Майстер: {a.master_name}
+              <br />
               🕒 Час: {formatDateTime(a.date, a.time)}
             </li>
           ))}

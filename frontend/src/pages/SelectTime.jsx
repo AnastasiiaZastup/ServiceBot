@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
 
-const timeOptions = [
+// Поля з фіксованими датою та часом
+const timeOptionsFull = [
   "2025-05-21T10:00:00",
   "2025-05-21T11:00:00",
   "2025-05-21T12:00:00",
   "2025-05-21T14:00:00",
 ];
+
+// Витягуємо дату з першого елемента
+const datePart = timeOptionsFull[0].split("T")[0];
+// Масив лише часів у форматі "HH:MM"
+const timeOptions = timeOptionsFull.map((t) => t.split("T")[1].slice(0, 5));
 
 export default function SelectTime({
   user,
@@ -14,10 +20,11 @@ export default function SelectTime({
   onBack,
   onGoToAppointments,
 }) {
-  const [bookedSlots, setBookedSlots] = useState([]);
+  const [bookedTimes, setBookedTimes] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [justBooked, setJustBooked] = useState(null);
+  const [justBookedTime, setJustBookedTime] = useState(null);
 
+  // Завантажуємо зайняті слоти майстра
   const fetchAppointments = async () => {
     setLoading(true);
     try {
@@ -25,13 +32,9 @@ export default function SelectTime({
         `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
       );
       const data = await res.json();
-
-      const slots = data.appointments.map(
-        (a) => `${a.date}T${a.time.slice(0, 8)}`
-      );
-
-      setBookedSlots(slots);
-      console.log("📌 Оновлено слоти:", slots);
+      // Отримаємо масив рядків "HH:MM"
+      const times = (data.appointments || []).map((a) => a.time.slice(0, 5));
+      setBookedTimes(times);
     } catch (err) {
       console.error("❌ Помилка отримання записів майстра:", err);
     } finally {
@@ -40,10 +43,12 @@ export default function SelectTime({
   };
 
   useEffect(() => {
-    fetchAppointments();
+    if (master?.id) fetchAppointments();
   }, [master.id]);
 
-  const handleSelectTime = async (date_time) => {
+  const handleSelectTime = async (time) => {
+    // Додаємо 'Z' щоб трактувати як UTC і уникнути зсуву
+    const date_time = `${datePart}T${time}:00Z`;
     try {
       const res = await fetch(
         "https://service-bot-backend.onrender.com/appointments",
@@ -58,35 +63,34 @@ export default function SelectTime({
           }),
         }
       );
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setJustBooked(date_time);
-        // 💡 Одразу додаємо слот до bookedSlots
-        setBookedSlots((prev) => [...prev, date_time]);
-        await fetchAppointments(); // Потім ще оновимо з бекенду
-      } else {
-        alert("🚫 Помилка: " + data.error);
+      // Якщо слот зайнятий або інша помилка, просто відмічаємо як зайнятий
+      if (!res.ok) {
+        if (res.status === 409) {
+          setBookedTimes((prev) => [...new Set([...prev, time])]);
+        }
+        return;
       }
+      // Успішний запис
+      setJustBookedTime(time);
+      setBookedTimes((prev) => [...new Set([...prev, time])]);
     } catch (err) {
       console.error("❌ Помилка створення запису:", err);
-      alert("🚫 Не вдалося створити запис.");
+      setBookedTimes((prev) => [...new Set([...prev, time])]);
     }
   };
 
   return (
     <div style={{ padding: "16px" }}>
       <h2>
-        Обери час для <br />
-        {service.name} з {master.name}
+        Оберіть час для <br />
+        {service.name} з {master.name} ({datePart})
       </h2>
 
       <button
         onClick={onBack}
         style={{
           marginBottom: "16px",
-          padding: "8px 16px",
+          padding: "8px",
           backgroundColor: "#eee",
           borderRadius: "8px",
           cursor: "pointer",
@@ -95,21 +99,17 @@ export default function SelectTime({
         ⬅️ Назад
       </button>
 
-      {justBooked && (
-        <div style={{ marginBottom: "16px", color: "#16a34a" }}>
-          ✅ Ви записались на:{" "}
-          {new Date(justBooked).toLocaleString("uk", {
-            dateStyle: "short",
-            timeStyle: "short",
-          })}
+      {justBookedTime && (
+        <div style={{ margin: "16px 0", color: "#16a34a" }}>
+          ✅ Ви записані на: {justBookedTime}
           <br />
           <button
             onClick={onGoToAppointments}
             style={{
-              marginTop: "12px",
-              padding: "10px 20px",
+              marginTop: "8px",
+              padding: "8px",
               backgroundColor: "#0d9488",
-              color: "white",
+              color: "#fff",
               border: "none",
               borderRadius: "8px",
               cursor: "pointer",
@@ -125,7 +125,7 @@ export default function SelectTime({
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
           {timeOptions.map((time) => {
-            const isBooked = bookedSlots.includes(time);
+            const isBooked = bookedTimes.includes(time);
             return (
               <li key={time} style={{ marginBottom: "12px" }}>
                 <button
@@ -136,14 +136,11 @@ export default function SelectTime({
                     borderRadius: "8px",
                     border: "none",
                     backgroundColor: isBooked ? "#d1d5db" : "#22c55e",
-                    color: isBooked ? "#6b7280" : "white",
+                    color: isBooked ? "#6b7280" : "#fff",
                     cursor: isBooked ? "not-allowed" : "pointer",
                   }}
                 >
-                  {new Date(time).toLocaleString("uk", {
-                    dateStyle: "short",
-                    timeStyle: "short",
-                  })}
+                  {time}
                 </button>
               </li>
             );
