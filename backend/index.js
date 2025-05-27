@@ -227,7 +227,26 @@ fastify.delete("/appointments/:id", async (req, reply) => {
   }
 });
 
-// Інші маршрути...
+// Повертає список категорій
+fastify.get("/categories", async (req, reply) => {
+  const client = await fastify.pg.connect();
+  const { rows } = await client.query("SELECT * FROM categories");
+  client.release();
+  return reply.code(200).send({ categories: rows });
+});
+
+// Повертає послуги конкретної категорії
+fastify.get("/services-by-category/:category_id", async (req, reply) => {
+  const { category_id } = req.params;
+  const client = await fastify.pg.connect();
+  const { rows } = await client.query(
+    "SELECT * FROM services WHERE category_id = $1",
+    [category_id]
+  );
+  client.release();
+  return reply.code(200).send({ services: rows });
+});
+
 // Тут можна додати маршрути для майстрів, категорій, сервісів тощо
 
 const start = async () => {
