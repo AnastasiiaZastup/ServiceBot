@@ -97,6 +97,20 @@ fastify.post("/user/register", async (req, reply) => {
   }
 });
 
+// DELETE /appointments/:id — скасовуємо запис
+fastify.delete("/appointments/:id", async (req, reply) => {
+  const id = parseInt(req.params.id, 10);
+  try {
+    const client = await fastify.pg.connect();
+    await client.query("DELETE FROM appointments WHERE id = $1", [id]);
+    client.release();
+    return reply.code(204).send(); // успішно, без тіла
+  } catch (err) {
+    fastify.log.error("Error deleting appointment:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 fastify.get("/user/:telegram_id", async (req, reply) => {
   const telegram_id = req.params.telegram_id;
 
@@ -351,20 +365,6 @@ fastify.get(
     }
   }
 );
-
-// DELETE /appointments/:id — скасовуємо запис
-fastify.delete("/appointments/:id", async (req, reply) => {
-  const id = parseInt(req.params.id, 10);
-  try {
-    const client = await fastify.pg.connect();
-    await client.query("DELETE FROM appointments WHERE id = $1", [id]);
-    client.release();
-    return reply.code(204).send(); // успішно, без тіла
-  } catch (err) {
-    fastify.log.error("Error deleting appointment:", err);
-    return reply.code(500).send({ error: "Server error" });
-  }
-});
 
 fastify.get("/categories", async (req, reply) => {
   try {
