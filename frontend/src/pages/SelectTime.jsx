@@ -8,7 +8,7 @@ const timeOptionsFull = [
   "2025-05-21T14:00:00",
 ];
 
-// Витягуємо дату з першого елемента
+// Витягуємо дату з першого елемента (можна змінити динамічно для майбутніх покращень)
 const datePart = timeOptionsFull[0].split("T")[0];
 // Масив лише часів у форматі "HH:MM"
 const timeOptions = timeOptionsFull.map((t) => t.split("T")[1].slice(0, 5));
@@ -82,8 +82,8 @@ export default function SelectTime({
   return (
     <div style={{ padding: "16px" }}>
       <h2>
-        Оберіть час для <br />
-        {service.name} з {master.name} ({datePart})
+        Оберіть час та дату для <br />
+        {service.name} з {master.name}
       </h2>
 
       <button
@@ -101,7 +101,7 @@ export default function SelectTime({
 
       {justBookedTime && (
         <div style={{ margin: "16px 0", color: "#16a34a" }}>
-          ✅ Ви записані на: {justBookedTime}
+          ✅ Ви записані на: {datePart} {justBookedTime}
           <br />
           <button
             onClick={onGoToAppointments}
@@ -140,7 +140,7 @@ export default function SelectTime({
                     cursor: isBooked ? "not-allowed" : "pointer",
                   }}
                 >
-                  {time}
+                  {datePart} {time}
                 </button>
               </li>
             );
