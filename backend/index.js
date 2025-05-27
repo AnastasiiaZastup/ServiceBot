@@ -352,6 +352,20 @@ fastify.get(
   }
 );
 
+// DELETE /appointments/:id — скасовуємо запис
+fastify.delete("/appointments/:id", async (req, reply) => {
+  const id = parseInt(req.params.id, 10);
+  try {
+    const client = await fastify.pg.connect();
+    await client.query("DELETE FROM appointments WHERE id = $1", [id]);
+    client.release();
+    return reply.code(204).send(); // успішно, без тіла
+  } catch (err) {
+    fastify.log.error("Error deleting appointment:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 fastify.get("/categories", async (req, reply) => {
   try {
     const client = await fastify.pg.connect();
@@ -380,24 +394,6 @@ fastify.get("/services-by-category/:category_id", async (req, reply) => {
     return reply.code(500).send({ error: "Server error" });
   }
 });
-
-// Скасувати запис за його id, видаляючи з бази
-fastify.delete(
-  "/appointments/:id",
-  { preHandler: roleCheck(["client", "master"]) }, // або без preHandler, якщо доступ відкритий
-  async (req, reply) => {
-    const { id } = req.params;
-    try {
-      const client = await fastify.pg.connect();
-      await client.query("DELETE FROM appointments WHERE id = $1", [id]);
-      client.release();
-      return reply.code(204).send(); // успішно без контенту
-    } catch (err) {
-      console.error("Error deleting appointment:", err);
-      return reply.code(500).send({ error: "Server error" });
-    }
-  }
-);
 
 const start = async () => {
   try {

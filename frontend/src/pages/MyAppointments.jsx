@@ -3,12 +3,13 @@ import React, { useEffect, useState } from "react";
 export default function MyAppointments({ user, onBack }) {
   const [appointments, setAppointments] = useState([]);
 
-  // Завантажуємо список записів клієнта
+  // 1) підвантажуємо список
   const fetchAppointments = async () => {
     try {
       const res = await fetch(
         `https://service-bot-backend.onrender.com/appointments/${user.telegram_id}`
       );
+      if (!res.ok) throw new Error(res.statusText);
       const data = await res.json();
       setAppointments(data.appointments || []);
     } catch (err) {
@@ -16,64 +17,63 @@ export default function MyAppointments({ user, onBack }) {
     }
   };
 
-  // Підвантажуємо при старті та при зміні user.telegram_id
+  // 2) запускаємо один раз на маунті
   useEffect(() => {
     if (user?.telegram_id) fetchAppointments();
-  }, [user.telegram_id]);
+  }, [user]);
 
-  // Скасування запису
-  const cancelAppointment = async (id) => {
+  // 3) обробник скасування
+  const cancelAppointment = async (appointmentId) => {
     try {
       const res = await fetch(
-        `https://service-bot-backend.onrender.com/appointments/${id}`,
-        { method: "DELETE" }
+        `https://service-bot-backend.onrender.com/appointments/${appointmentId}`,
+        {
+          method: "DELETE",
+          // без тіла, тому заголовків мінімум
+          headers: { Accept: "application/json" },
+        }
       );
-      if (res.ok) {
-        fetchAppointments();
-      } else {
-        console.error("❌ Помилка скасування запису:", await res.text());
-      }
+      if (!res.ok) throw new Error(`DELETE failed: ${res.status}`);
+      // після успішного скасування — оновлюємо список
+      await fetchAppointments();
     } catch (err) {
-      console.error("❌ Помилка скасування запису:", err);
+      console.error("❌ Помилка скасування:", err);
     }
   };
 
   return (
-    <div style={{ padding: "16px" }}>
+    <div style={{ padding: 16 }}>
       <h2>📅 Мої записи</h2>
-      <button onClick={onBack} style={{ marginBottom: "12px" }}>
+      <button onClick={onBack} style={{ marginBottom: 12 }}>
         ⬅️ Назад
       </button>
 
       {appointments.length === 0 ? (
-        <p>У вас поки немає записів.</p>
+        <p>У вас поки нема записів.</p>
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
           {appointments.map((a) => (
             <li
               key={a.id}
               style={{
-                marginBottom: "16px",
-                padding: "12px",
+                marginBottom: 16,
+                padding: 12,
                 backgroundColor: "#f3f3f3",
-                borderRadius: "8px",
+                borderRadius: 8,
               }}
             >
-              <strong>{a.service_title}</strong>
-              <br />
-              👩‍🎨 Майстер: {a.master_name}
-              <br />
-              🕒 {a.date} {a.time}
-              <br />
+              <strong>{a.service_title}</strong> <br />
+              👩‍🎨 Майстер: {a.master_name} <br />
+              🕒 {a.date} {a.time} <br />
               <button
                 onClick={() => cancelAppointment(a.id)}
                 style={{
-                  marginTop: "8px",
+                  marginTop: 8,
                   padding: "6px 12px",
                   backgroundColor: "#ef4444",
                   color: "#fff",
                   border: "none",
-                  borderRadius: "8px",
+                  borderRadius: 8,
                   cursor: "pointer",
                 }}
               >
