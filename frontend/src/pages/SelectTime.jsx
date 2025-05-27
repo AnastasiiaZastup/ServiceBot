@@ -10,7 +10,7 @@ const timeOptionsFull = [
 
 // Витягуємо дату з першого елемента
 const datePart = timeOptionsFull[0].split("T")[0];
-// Масив лише часів у форматі "HH:MM"
+
 const timeOptions = timeOptionsFull.map((t) => t.split("T")[1].slice(0, 5));
 
 export default function SelectTime({
