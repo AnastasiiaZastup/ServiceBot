@@ -381,6 +381,24 @@ fastify.get("/services-by-category/:category_id", async (req, reply) => {
   }
 });
 
+// Скасувати запис за його id, видаляючи з бази
+fastify.delete(
+  "/appointments/:id",
+  { preHandler: roleCheck(["client", "master"]) }, // або без preHandler, якщо доступ відкритий
+  async (req, reply) => {
+    const { id } = req.params;
+    try {
+      const client = await fastify.pg.connect();
+      await client.query("DELETE FROM appointments WHERE id = $1", [id]);
+      client.release();
+      return reply.code(204).send(); // успішно без контенту
+    } catch (err) {
+      console.error("Error deleting appointment:", err);
+      return reply.code(500).send({ error: "Server error" });
+    }
+  }
+);
+
 const start = async () => {
   try {
     await fastify.listen({ port: 3000, host: "0.0.0.0" });
