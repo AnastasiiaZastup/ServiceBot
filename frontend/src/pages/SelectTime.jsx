@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
@@ -7,7 +7,7 @@ export default function SelectTime({
   service,
   master,
   onBack,
-  onGoToAppointments,
+  onGoToAppointments, // можна залишити для кінцевої навігації
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [bookedSlots, setBookedSlots] = useState([]);
@@ -16,37 +16,37 @@ export default function SelectTime({
   const timeOptions = ["10:00", "11:00", "12:00", "14:00"];
   const formatDate = (date) => date.toISOString().split("T")[0];
 
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      setLoading(true);
-      try {
-        // Отримуємо всі записи та фільтруємо по майстру і даті
-        const res = await fetch(
-          `https://service-bot-backend.onrender.com/appointments`
-        );
-        const { appointments } = await res.json();
-        const dateStr = formatDate(selectedDate);
+  // Винесли в колбек, щоб можна було викликати з handleSelectTime
+  const fetchAppointments = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch(
+        `https://service-bot-backend.onrender.com/appointments`
+      );
+      const { appointments } = await res.json();
+      const dateStr = formatDate(selectedDate);
 
-        const slots = appointments
-          .filter((a) => {
-            // дата у форматі "YYYY-MM-DD" з date_time
-            const [day] = a.date_time.split("T");
-            // перевіряємо майстра (підтримуємо flat master_id або вкладений master.id)
-            const isSameMaster =
-              a.master_id === master.id || a.master?.id === master.id;
-            return day === dateStr && isSameMaster;
-          })
-          .map((a) => a.date_time.split("T")[1].slice(0, 5));
+      const slots = appointments
+        .filter((a) => {
+          const [day] = a.date_time.split("T");
+          const isSameMaster =
+            a.master_id === master.id || a.master?.id === master.id;
+          return day === dateStr && isSameMaster;
+        })
+        .map((a) => a.date_time.split("T")[1].slice(0, 5));
 
-        setBookedSlots(slots);
-      } catch (err) {
-        console.error("Помилка завантаження слотів:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchAppointments();
+      setBookedSlots(slots);
+    } catch (err) {
+      console.error("Помилка завантаження слотів:", err);
+    } finally {
+      setLoading(false);
+    }
   }, [selectedDate, master.id]);
+
+  // ініціальна і при зміні дати
+  useEffect(() => {
+    fetchAppointments();
+  }, [fetchAppointments]);
 
   const handleSelectTime = async (time) => {
     const dateTime = `${formatDate(selectedDate)}T${time}:00`;
@@ -65,7 +65,11 @@ export default function SelectTime({
         }
       );
       if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
-      onGoToAppointments();
+
+      // Оновлюємо список зайнятих слотів, не виходячи з екрану
+      await fetchAppointments();
+      // Тепер ви можете або залишитися тут, або при потребі перейти до "Мої записи":
+      // onGoToAppointments();
     } catch (err) {
       console.error("Помилка створення запису:", err);
     }
@@ -78,12 +82,12 @@ export default function SelectTime({
         onChange={setSelectedDate}
         value={selectedDate}
         minDate={new Date()}
-        next2Label={null}
       />
 
       <h3 style={{ marginTop: 24 }}>
         🕑 Доступні часи на {formatDate(selectedDate)}
       </h3>
+
       {loading ? (
         <p>Завантажуємо слоти...</p>
       ) : (
@@ -113,12 +117,20 @@ export default function SelectTime({
         </div>
       )}
 
-      <button
-        onClick={onBack}
-        style={{ marginTop: 24, padding: "6px 12px", borderRadius: 8 }}
-      >
-        ⬅️ Назад
-      </button>
+      <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
+        <button
+          onClick={onBack}
+          style={{ padding: "6px 12px", borderRadius: 8 }}
+        >
+          ⬅️ Назад
+        </button>
+        <button
+          onClick={onGoToAppointments}
+          style={{ padding: "6px 12px", borderRadius: 8 }}
+        >
+          📋 Мої записи
+        </button>
+      </div>
     </div>
   );
 }
