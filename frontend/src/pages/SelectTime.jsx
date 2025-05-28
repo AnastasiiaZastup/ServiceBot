@@ -1,17 +1,6 @@
 import React, { useState, useEffect } from "react";
-
-// Поля з фіксованими датою та часом
-const timeOptionsFull = [
-  "2025-05-21T10:00:00",
-  "2025-05-21T11:00:00",
-  "2025-05-21T12:00:00",
-  "2025-05-21T14:00:00",
-];
-
-// Витягуємо дату з першого елемента (можна змінити динамічно для майбутніх покращень)
-const datePart = timeOptionsFull[0].split("T")[0];
-// Масив лише часів у форматі "HH:MM"
-const timeOptions = timeOptionsFull.map((t) => t.split("T")[1].slice(0, 5));
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 export default function SelectTime({
   user,
@@ -20,38 +9,47 @@ export default function SelectTime({
   onBack,
   onGoToAppointments,
 }) {
-  const [bookedTimes, setBookedTimes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [justBookedTime, setJustBookedTime] = useState(null);
+  // Стан обраної дати
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Завантажуємо зайняті слоти майстра
-  const fetchAppointments = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
-      );
-      const data = await res.json();
-      // Отримаємо масив рядків "HH:MM"
-      const times = (data.appointments || []).map((a) => a.time.slice(0, 5));
-      setBookedTimes(times);
-    } catch (err) {
-      console.error("❌ Помилка отримання записів майстра:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Фіксований набір часових опцій
+  const timeOptions = ["10:00", "11:00", "12:00", "14:00"];
 
+  // Форматування дати в YYYY-MM-DD
+  const formatDate = (date) => date.toISOString().split("T")[0];
+
+  // Підвантажуємо зайняті слоти на обрану дату
   useEffect(() => {
-    if (master?.id) fetchAppointments();
-  }, [master.id]);
+    const fetchAppointments = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(
+          `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
+        );
+        const { appointments } = await res.json();
+        // Фільтруємо за обраною датою
+        const dateStr = formatDate(selectedDate);
+        const slots = appointments
+          .filter((a) => a.date === dateStr)
+          .map((a) => a.time);
+        setBookedSlots(slots);
+      } catch (err) {
+        console.error("Помилка завантаження занять:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAppointments();
+  }, [selectedDate, master.id]);
 
+  // Обробник вибору слоту
   const handleSelectTime = async (time) => {
-    // Додаємо 'Z' щоб трактувати як UTC і уникнути зсуву
-    const date_time = `${datePart}T${time}:00Z`;
+    const dateTime = `${formatDate(selectedDate)}T${time}:00`;
     try {
       const res = await fetch(
-        "https://service-bot-backend.onrender.com/appointments",
+        `https://service-bot-backend.onrender.com/appointments`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -59,94 +57,64 @@ export default function SelectTime({
             telegram_id: user.telegram_id,
             service_id: service.id,
             master_id: master.id,
-            date_time,
+            date_time: dateTime,
           }),
         }
       );
-      // Якщо слот зайнятий або інша помилка, просто відмічаємо як зайнятий
-      if (!res.ok) {
-        if (res.status === 409) {
-          setBookedTimes((prev) => [...new Set([...prev, time])]);
-        }
-        return;
-      }
-      // Успішний запис
-      setJustBookedTime(time);
-      setBookedTimes((prev) => [...new Set([...prev, time])]);
+      if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
+      onGoToAppointments(); // переходимо до списку своїх записів
     } catch (err) {
-      console.error("❌ Помилка створення запису:", err);
-      setBookedTimes((prev) => [...new Set([...prev, time])]);
+      console.error("Помилка створення запису:", err);
     }
   };
 
   return (
-    <div style={{ padding: "16px" }}>
-      <h2>
-        Оберіть час та дату для <br />
-        {service.name} з {master.name}
-      </h2>
+    <div style={{ padding: 16 }}>
+      <h2>🗓️ Виберіть дату</h2>
+      <Calendar
+        onChange={setSelectedDate}
+        value={selectedDate}
+        minDate={new Date()}
+        next2Label={null}
+      />
 
-      <button
-        onClick={onBack}
-        style={{
-          marginBottom: "16px",
-          padding: "8px",
-          backgroundColor: "#eee",
-          borderRadius: "8px",
-          cursor: "pointer",
-        }}
-      >
-        ⬅️ Назад
-      </button>
-
-      {justBookedTime && (
-        <div style={{ margin: "16px 0", color: "#16a34a" }}>
-          ✅ Ви записані на: {datePart} {justBookedTime}
-          <br />
-          <button
-            onClick={onGoToAppointments}
-            style={{
-              marginTop: "8px",
-              padding: "8px",
-              backgroundColor: "#0d9488",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
-            📅 Перейти до моїх записів
-          </button>
+      <h3 style={{ marginTop: 24 }}>
+        🕑 Доступні часи на {formatDate(selectedDate)}
+      </h3>
+      {loading ? (
+        <p>Завантажуємо слоти...</p>
+      ) : (
+        <div
+          style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}
+        >
+          {timeOptions.map((time) => {
+            const isBooked = bookedSlots.includes(time + ":00");
+            return (
+              <button
+                key={time}
+                disabled={isBooked}
+                onClick={() => handleSelectTime(time)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  border: "1px solid #ccc",
+                  backgroundColor: isBooked ? "#f3f3f3" : "#fff",
+                  cursor: isBooked ? "not-allowed" : "pointer",
+                }}
+              >
+                {time}
+              </button>
+            );
+          })}
         </div>
       )}
 
-      {loading ? (
-        <p>Завантаження слотів...</p>
-      ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {timeOptions.map((time) => {
-            const isBooked = bookedTimes.includes(time);
-            return (
-              <li key={time} style={{ marginBottom: "12px" }}>
-                <button
-                  onClick={() => !isBooked && handleSelectTime(time)}
-                  disabled={isBooked}
-                  style={{
-                    padding: "10px 20px",
-                    borderRadius: "8px",
-                    border: "none",
-                    backgroundColor: isBooked ? "#d1d5db" : "#22c55e",
-                    color: isBooked ? "#6b7280" : "#fff",
-                    cursor: isBooked ? "not-allowed" : "pointer",
-                  }}
-                >
-                  {datePart} {time}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+      <button
+        onClick={onBack}
+        style={{ marginTop: 24, padding: "6px 12px", borderRadius: 8 }}
+      >
+        ⬅️ Назад
+      </button>
     </div>
   );
 }
