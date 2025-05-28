@@ -9,18 +9,14 @@ export default function SelectTime({
   onBack,
   onGoToAppointments,
 }) {
-  // Стан обраної дати
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [bookedSlots, setBookedSlots] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Фіксований набір часових опцій
   const timeOptions = ["10:00", "11:00", "12:00", "14:00"];
 
-  // Форматування дати в YYYY-MM-DD
   const formatDate = (date) => date.toISOString().split("T")[0];
 
-  // Підвантажуємо зайняті слоти на обрану дату
   useEffect(() => {
     const fetchAppointments = async () => {
       setLoading(true);
@@ -29,14 +25,40 @@ export default function SelectTime({
           `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
         );
         const { appointments } = await res.json();
-        // Фільтруємо за обраною датою
         const dateStr = formatDate(selectedDate);
+
+        // Визначаємо зайняті слоти
         const slots = appointments
-          .filter((a) => a.date === dateStr)
-          .map((a) => a.time);
+          .filter((a) => {
+            // Підтримуємо різні формати: a.date або a.date_time
+            if (a.date && a.time) {
+              return a.date === dateStr;
+            }
+            if (a.date_time) {
+              return (
+                new Date(a.date_time).toISOString().split("T")[0] === dateStr
+              );
+            }
+            return false;
+          })
+          .map((a) => {
+            // Отримуємо час у форматі HH:mm
+            if (a.time) {
+              return a.time.slice(0, 5);
+            }
+            if (a.date_time) {
+              return new Date(a.date_time)
+                .toISOString()
+                .split("T")[1]
+                .slice(0, 5);
+            }
+            return null;
+          })
+          .filter(Boolean);
+
         setBookedSlots(slots);
       } catch (err) {
-        console.error("Помилка завантаження занять:", err);
+        console.error("Помилка завантаження слотів:", err);
       } finally {
         setLoading(false);
       }
@@ -44,7 +66,6 @@ export default function SelectTime({
     fetchAppointments();
   }, [selectedDate, master.id]);
 
-  // Обробник вибору слоту
   const handleSelectTime = async (time) => {
     const dateTime = `${formatDate(selectedDate)}T${time}:00`;
     try {
@@ -62,7 +83,7 @@ export default function SelectTime({
         }
       );
       if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
-      onGoToAppointments(); // переходимо до списку своїх записів
+      onGoToAppointments();
     } catch (err) {
       console.error("Помилка створення запису:", err);
     }
@@ -88,7 +109,7 @@ export default function SelectTime({
           style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}
         >
           {timeOptions.map((time) => {
-            const isBooked = bookedSlots.includes(`${time}:00`);
+            const isBooked = bookedSlots.includes(time);
             return (
               <button
                 key={time}
