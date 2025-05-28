@@ -88,7 +88,7 @@ export default function SelectTime({
           style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}
         >
           {timeOptions.map((time) => {
-            const isBooked = bookedSlots.includes(time + ":00");
+            const isBooked = bookedSlots.includes(`${time}:00`);
             return (
               <button
                 key={time}
@@ -97,8 +97,9 @@ export default function SelectTime({
                 style={{
                   padding: "8px 12px",
                   borderRadius: 8,
-                  border: "1px solid #ccc",
-                  backgroundColor: isBooked ? "#f3f3f3" : "#fff",
+                  border: "none",
+                  backgroundColor: isBooked ? "#e5e7eb" : "#10b981",
+                  color: isBooked ? "#6b7280" : "#fff",
                   cursor: isBooked ? "not-allowed" : "pointer",
                 }}
               >
