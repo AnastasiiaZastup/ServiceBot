@@ -7,7 +7,7 @@ export default function SelectTime({
   service,
   master,
   onBack,
-  onGoToAppointments, // можна залишити для кінцевої навігації
+  onGoToAppointments,
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [bookedSlots, setBookedSlots] = useState([]);
@@ -16,7 +16,7 @@ export default function SelectTime({
   const timeOptions = ["10:00", "11:00", "12:00", "14:00"];
   const formatDate = (date) => date.toISOString().split("T")[0];
 
-  // Винесли в колбек, щоб можна було викликати з handleSelectTime
+  // Завантаження слотуів із урахуванням дати і майстра
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
     try {
@@ -26,14 +26,16 @@ export default function SelectTime({
       const { appointments } = await res.json();
       const dateStr = formatDate(selectedDate);
 
+      // Фільтруємо записи за датою та майстром
       const slots = appointments
         .filter((a) => {
-          const [day] = a.date_time.split("T");
+          const [day] = a.date_time.split("T"); // "YYYY-MM-DD"
           const isSameMaster =
             a.master_id === master.id || a.master?.id === master.id;
           return day === dateStr && isSameMaster;
         })
-        .map((a) => a.date_time.split("T")[1].slice(0, 5));
+        // Витягаємо час із поля `time` ("HH:mm:ss" → "HH:mm")
+        .map((a) => a.time.slice(0, 5));
 
       setBookedSlots(slots);
     } catch (err) {
@@ -43,7 +45,7 @@ export default function SelectTime({
     }
   }, [selectedDate, master.id]);
 
-  // ініціальна і при зміні дати
+  // Запуск при зміні дати або майстра
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
@@ -66,10 +68,8 @@ export default function SelectTime({
       );
       if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
 
-      // Оновлюємо список зайнятих слотів, не виходячи з екрану
+      // Після бронювання оновлюємо доступні слоти для тієї ж дати
       await fetchAppointments();
-      // Тепер ви можете або залишитися тут, або при потребі перейти до "Мої записи":
-      // onGoToAppointments();
     } catch (err) {
       console.error("Помилка створення запису:", err);
     }
