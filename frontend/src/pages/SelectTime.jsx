@@ -14,9 +14,15 @@ export default function SelectTime({
   const [loading, setLoading] = useState(false);
 
   const timeOptions = ["10:00", "11:00", "12:00", "14:00"];
-  const formatDate = (date) => date.toISOString().split("T")[0];
 
-  // Завантаження слотуів із урахуванням дати і майстра
+  // Форматування локальної дати без зсуву по UTC
+  const formatDate = (date) => {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`; // "YYYY-MM-DD"
+  };
+
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
     try {
@@ -26,15 +32,14 @@ export default function SelectTime({
       const { appointments } = await res.json();
       const dateStr = formatDate(selectedDate);
 
-      // Фільтруємо записи за датою та майстром
       const slots = appointments
         .filter((a) => {
-          const [day] = a.date_time.split("T"); // "YYYY-MM-DD"
+          // Фільтруємо по даті в date_time (без урахування UTC-зсуву)
+          const [day] = a.date_time.split("T");
           const isSameMaster =
             a.master_id === master.id || a.master?.id === master.id;
           return day === dateStr && isSameMaster;
         })
-        // Витягаємо час із поля `time` ("HH:mm:ss" → "HH:mm")
         .map((a) => a.time.slice(0, 5));
 
       setBookedSlots(slots);
@@ -45,7 +50,6 @@ export default function SelectTime({
     }
   }, [selectedDate, master.id]);
 
-  // Запуск при зміні дати або майстра
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
@@ -68,7 +72,7 @@ export default function SelectTime({
       );
       if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
 
-      // Після бронювання оновлюємо доступні слоти для тієї ж дати
+      // Оновлюємо доступні слоти на поточну дату
       await fetchAppointments();
     } catch (err) {
       console.error("Помилка створення запису:", err);
