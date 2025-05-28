@@ -14,47 +14,29 @@ export default function SelectTime({
   const [loading, setLoading] = useState(false);
 
   const timeOptions = ["10:00", "11:00", "12:00", "14:00"];
-
   const formatDate = (date) => date.toISOString().split("T")[0];
 
   useEffect(() => {
     const fetchAppointments = async () => {
       setLoading(true);
       try {
+        // Отримуємо всі записи та фільтруємо по майстру і даті
         const res = await fetch(
-          `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
+          `https://service-bot-backend.onrender.com/appointments`
         );
         const { appointments } = await res.json();
         const dateStr = formatDate(selectedDate);
 
-        // Визначаємо зайняті слоти
         const slots = appointments
           .filter((a) => {
-            // Підтримуємо різні формати: a.date або a.date_time
-            if (a.date && a.time) {
-              return a.date === dateStr;
-            }
-            if (a.date_time) {
-              return (
-                new Date(a.date_time).toISOString().split("T")[0] === dateStr
-              );
-            }
-            return false;
+            // дата у форматі "YYYY-MM-DD" з date_time
+            const [day] = a.date_time.split("T");
+            // перевіряємо майстра (підтримуємо flat master_id або вкладений master.id)
+            const isSameMaster =
+              a.master_id === master.id || a.master?.id === master.id;
+            return day === dateStr && isSameMaster;
           })
-          .map((a) => {
-            // Отримуємо час у форматі HH:mm
-            if (a.time) {
-              return a.time.slice(0, 5);
-            }
-            if (a.date_time) {
-              return new Date(a.date_time)
-                .toISOString()
-                .split("T")[1]
-                .slice(0, 5);
-            }
-            return null;
-          })
-          .filter(Boolean);
+          .map((a) => a.date_time.split("T")[1].slice(0, 5));
 
         setBookedSlots(slots);
       } catch (err) {
