@@ -1,0 +1,31 @@
+/* базова кнопка слота */
+.slot-button {
+  background-color: #4caf50; /* зелений фон */
+  color: #ffffff; /* білий текст */
+  border: none;
+  border-radius: 4px;
+  padding: 10px 18px;
+  margin: 6px 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* ховер-ефект для доступного слота */
+.slot-button:hover {
+  background-color: #45a049;
+}
+
+/* стан “заброньовано” */
+.slot-button--booked,
+.slot-button[disabled] {
+  background-color: #cccccc; /* сірий фон */
+  color: #666666; /* темно-сірий текст */
+  cursor: not-allowed;
+}
+
+/* скасувати ховер для заброньованої */
+.slot-button--booked:hover,
+.slot-button[disabled]:hover {
+  background-color: #cccccc;
+}

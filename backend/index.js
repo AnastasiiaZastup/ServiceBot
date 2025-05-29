@@ -290,6 +290,36 @@ fastify.get("/appointments/master/:id", async (req, reply) => {
   }
 });
 
+// GET /appointments/master/:id/:date
+fastify.get("/appointments/master/:id/:date", async (req, reply) => {
+  const master_id = req.params.id;
+  const date = req.params.date; // наприклад "2025-05-29"
+
+  try {
+    const client = await fastify.pg.connect();
+    // Дістаємо тільки ті записи, дата яких = date (ігноруємо час)
+    const { rows } = await client.query(
+      `
+      SELECT date_time
+      FROM appointments
+      WHERE master_id = $1
+        AND date_time::date = $2::date
+      `,
+      [master_id, date]
+    );
+    client.release();
+
+    // Повертаємо лише масив часів у форматі "HH:MM"
+    const times = rows.map((r) =>
+      new Date(r.date_time).toISOString().split("T")[1].slice(0, 5)
+    );
+    return reply.code(200).send({ booked: times });
+  } catch (err) {
+    console.error("Error fetching master appointments by date:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 fastify.get("/masters-by-service/:serviceId", async (req, reply) => {
   const { serviceId } = req.params;
 
