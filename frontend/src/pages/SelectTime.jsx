@@ -20,7 +20,7 @@ export default function SelectTime({
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
+    return `${y}-${m}-${d}`; // "YYYY-MM-DD"
   };
 
   const fetchAppointments = useCallback(async () => {
@@ -31,7 +31,6 @@ export default function SelectTime({
         `https://service-bot-backend.onrender.com/appointments/master/${master.id}/${dateStr}`
       );
       const { booked } = await res.json();
-      console.log("Booked for", dateStr, "→", booked);
       setBookedSlots(booked);
     } catch (err) {
       console.error("❌ fetchAppointments error:", err);
@@ -40,7 +39,7 @@ export default function SelectTime({
     }
   }, [selectedDate, master.id]);
 
-  // <-- ТУТ ПІДКЛЮЧАЄМО FETCH НА ЗАПУСК І ПРИ ЗМІНІ ДАТИ / МАЙСТРА
+  // Підвантажуємо слоти при маунті та при зміні дати або майстра
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
@@ -61,8 +60,8 @@ export default function SelectTime({
           }),
         }
       );
-      if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
-      // після успіху перезавантажуємо слоти
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+      // Оновлюємо слоти після успіху
       await fetchAppointments();
     } catch (err) {
       console.error("Помилка створення запису:", err);
