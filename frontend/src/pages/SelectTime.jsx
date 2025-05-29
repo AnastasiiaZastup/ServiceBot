@@ -1,45 +1,49 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import "./SelectTime.css";
 
 export default function SelectTime({
   user,
   service,
   master,
   onBack,
-  onGoToAppointments,
+  onGoToAppointments, // можна залишити для кінцевої навігації
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [bookedSlots, setBookedSlots] = useState([]);
   const [loading, setLoading] = useState(false);
 
   const timeOptions = ["10:00", "11:00", "12:00", "14:00"];
+  const formatDate = (date) => date.toISOString().split("T")[0];
 
-  const formatDate = (date) => {
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`; // "YYYY-MM-DD"
-  };
-
+  // Винесли в колбек, щоб можна було викликати з handleSelectTime
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
-    const dateStr = formatDate(selectedDate);
     try {
       const res = await fetch(
-        `https://service-bot-backend.onrender.com/appointments/master/${master.id}/${dateStr}`
+        `https://service-bot-backend.onrender.com/appointments`
       );
-      const { booked } = await res.json();
-      setBookedSlots(booked);
+      const { appointments } = await res.json();
+      const dateStr = formatDate(selectedDate);
+
+      const slots = appointments
+        .filter((a) => {
+          const [day] = a.date_time.split("T");
+          const isSameMaster =
+            a.master_id === master.id || a.master?.id === master.id;
+          return day === dateStr && isSameMaster;
+        })
+        .map((a) => a.date_time.split("T")[1].slice(0, 5));
+
+      setBookedSlots(slots);
     } catch (err) {
-      console.error("❌ fetchAppointments error:", err);
+      console.error("Помилка завантаження слотів:", err);
     } finally {
       setLoading(false);
     }
   }, [selectedDate, master.id]);
 
-  // Підвантажуємо слоти при маунті та при зміні дати або майстра
+  // ініціальна і при зміні дати
   useEffect(() => {
     fetchAppointments();
   }, [fetchAppointments]);
@@ -60,9 +64,12 @@ export default function SelectTime({
           }),
         }
       );
-      if (!res.ok) throw new Error(`Status ${res.status}`);
-      // Оновлюємо слоти після успіху
+      if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
+
+      // Оновлюємо список зайнятих слотів, не виходячи з екрану
       await fetchAppointments();
+      // Тепер ви можете або залишитися тут, або при потребі перейти до "Мої записи":
+      // onGoToAppointments();
     } catch (err) {
       console.error("Помилка створення запису:", err);
     }
@@ -93,10 +100,15 @@ export default function SelectTime({
               <button
                 key={time}
                 disabled={isBooked}
-                className={
-                  isBooked ? "slot-button slot-button--booked" : "slot-button"
-                }
                 onClick={() => handleSelectTime(time)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  border: "none",
+                  backgroundColor: isBooked ? "#e5e7eb" : "#10b981",
+                  color: isBooked ? "#6b7280" : "#fff",
+                  cursor: isBooked ? "not-allowed" : "pointer",
+                }}
               >
                 {time}
               </button>
