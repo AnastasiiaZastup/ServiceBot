@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 
@@ -27,19 +27,13 @@ export default function SelectTime({
     setLoading(true);
     try {
       const res = await fetch(
-        `https://service-bot-backend.onrender.com/appointments`
+        `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
       );
       const { appointments } = await res.json();
-      const dateStr = formatDate(selectedDate);
+      const dateStr = formatDate(selectedDate); // "YYYY-MM-DD"
 
       const slots = appointments
-        .filter((a) => {
-          // Фільтруємо по даті в date_time (без урахування UTC-зсуву)
-          const [day] = a.date_time.split("T");
-          const isSameMaster =
-            a.master_id === master.id || a.master?.id === master.id;
-          return day === dateStr && isSameMaster;
-        })
+        .filter((a) => a.date === dateStr)
         .map((a) => a.time.slice(0, 5));
 
       setBookedSlots(slots);
@@ -49,10 +43,6 @@ export default function SelectTime({
       setLoading(false);
     }
   }, [selectedDate, master.id]);
-
-  useEffect(() => {
-    fetchAppointments();
-  }, [fetchAppointments]);
 
   const handleSelectTime = async (time) => {
     const dateTime = `${formatDate(selectedDate)}T${time}:00`;
