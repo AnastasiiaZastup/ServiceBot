@@ -25,20 +25,29 @@ export default function SelectTime({
 
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
+    const dateStr = formatDate(selectedDate); // "YYYY-MM-DD"
+    console.log("➤ fetchAppointments:", {
+      masterId: master.id,
+      date: dateStr,
+    });
     try {
       const res = await fetch(
         `https://service-bot-backend.onrender.com/appointments/master/${master.id}`
       );
       const { appointments } = await res.json();
-      const dateStr = formatDate(selectedDate); // "YYYY-MM-DD"
-
+      console.log("➤ got appointments:", appointments);
+      // якщо бекенд повертає тільки поле date_time:
       const slots = appointments
-        .filter((a) => a.date === dateStr)
-        .map((a) => a.time.slice(0, 5));
-
+        .filter((a) => a.date_time.split("T")[0] === dateStr)
+        .map((a) => a.date_time.split("T")[1].slice(0, 5));
+      // якщо бекенд повертає date та time окремо, то:
+      // const slots = appointments
+      //   .filter(a => a.date === dateStr)
+      //   .map(a => a.time.slice(0,5))
+      console.log("➤ computed slots:", slots);
       setBookedSlots(slots);
     } catch (err) {
-      console.error("Помилка завантаження слотів:", err);
+      console.error("❌ fetchAppointments error:", err);
     } finally {
       setLoading(false);
     }
