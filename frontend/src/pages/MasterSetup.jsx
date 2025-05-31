@@ -3,10 +3,12 @@ import React, { useEffect, useState } from "react";
 export default function MasterSetup({ user, onBack, onSave }) {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
-  const [slotInput, setSlotInput] = useState("");
+
+  const [slotDate, setSlotDate] = useState("");
+  const [slotTime, setSlotTime] = useState("");
   const [slots, setSlots] = useState([]);
 
-  // Отримати всі доступні послуги
+  // 1. Отримати список доступних послуг
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -22,23 +24,27 @@ export default function MasterSetup({ user, onBack, onSave }) {
     fetchServices();
   }, []);
 
+  // 2. Вибір послуг
   const toggleService = (serviceId) => {
-    if (selectedServices.includes(serviceId)) {
-      setSelectedServices(selectedServices.filter((id) => id !== serviceId));
-    } else {
-      setSelectedServices([...selectedServices, serviceId]);
-    }
+    setSelectedServices((prev) =>
+      prev.includes(serviceId)
+        ? prev.filter((id) => id !== serviceId)
+        : [...prev, serviceId]
+    );
   };
 
+  // 3. Додавання слота
   const addSlot = () => {
-    if (!slotInput) return;
-    setSlots([...slots, slotInput]);
-    setSlotInput("");
+    if (!slotDate || !slotTime) return;
+    setSlots([...slots, { date: slotDate, time: slotTime }]);
+    setSlotDate("");
+    setSlotTime("");
   };
 
+  // 4. Збереження
   const saveAll = async () => {
     try {
-      // 1. Зберігаємо послуги
+      // 4.1 Зберігаємо обрані послуги
       await fetch("https://service-bot-backend.onrender.com/master/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -48,18 +54,18 @@ export default function MasterSetup({ user, onBack, onSave }) {
         }),
       });
 
-      // 2. Зберігаємо слоти
+      // 4.2 Зберігаємо слоти з датами
       await fetch("https://service-bot-backend.onrender.com/master/slots", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           master_id: user.id,
-          times: slots,
+          slots: slots,
         }),
       });
 
       alert("✅ Дані збережено!");
-      onSave(); // перехід далі
+      onSave(); // перейти до записів
     } catch (err) {
       console.error("❌ Помилка збереження:", err);
       alert("Помилка при збереженні даних");
@@ -84,19 +90,26 @@ export default function MasterSetup({ user, onBack, onSave }) {
         </div>
       ))}
 
-      <h3 style={{ marginTop: 16 }}>Додайте доступні слоти часу:</h3>
-      <div style={{ display: "flex", gap: 8 }}>
+      <h3 style={{ marginTop: 16 }}>Додайте доступні слоти (дата + час):</h3>
+      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
+        <input
+          type="date"
+          value={slotDate}
+          onChange={(e) => setSlotDate(e.target.value)}
+        />
         <input
           type="time"
-          value={slotInput}
-          onChange={(e) => setSlotInput(e.target.value)}
+          value={slotTime}
+          onChange={(e) => setSlotTime(e.target.value)}
         />
         <button onClick={addSlot}>➕ Додати</button>
       </div>
 
-      <ul style={{ marginTop: 12 }}>
+      <ul>
         {slots.map((slot, idx) => (
-          <li key={idx}>{slot}</li>
+          <li key={idx}>
+            📅 {slot.date} ⏰ {slot.time}
+          </li>
         ))}
       </ul>
 
@@ -112,6 +125,7 @@ export default function MasterSetup({ user, onBack, onSave }) {
             padding: "6px 12px",
             border: "none",
             borderRadius: 6,
+            cursor: "pointer",
           }}
         >
           💾 Зберегти

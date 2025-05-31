@@ -8,42 +8,72 @@ export default function SelectMaster({ service, onBack, onSelectMaster }) {
     const fetchMasters = async () => {
       try {
         const res = await fetch(
-          `https://service-bot-backend.onrender.com/masters-by-service/${service.id}`
+          `https://service-bot-backend.onrender.com/masters/${service.id}`
         );
         const data = await res.json();
-        console.log("Отримано майстрів:", data);
         setMasters(data.masters || []);
-      } catch (error) {
-        console.error("Помилка отримання майстрів:", error);
+      } catch (err) {
+        console.error("❌ Помилка завантаження майстрів:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    if (service?.id) {
-      fetchMasters();
-    }
+    if (service) fetchMasters();
   }, [service]);
 
-  if (loading) return <p>Завантаження майстрів...</p>;
-
   return (
-    <div style={{ padding: "16px" }}>
-      <h2>Майстри для послуги: {service.name}</h2>
-      <button onClick={onBack}>⬅️ Назад</button>
-      {masters.length === 0 ? (
-        <p>Майстрів не знайдено.</p>
+    <div style={{ padding: 16 }}>
+      <h2>👩‍🎨 Оберіть майстра</h2>
+
+      {loading ? (
+        <p>Завантаження...</p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
-          {masters.map((m) => (
-            <li key={m.id} style={{ marginBottom: "12px" }}>
-              <strong>{m.name}</strong> (@{m.username})
-              <br />
-              <button onClick={() => onSelectMaster(m)}>Обрати</button>
-            </li>
-          ))}
-        </ul>
+        <>
+          {masters.length === 0 ? (
+            <p>Немає майстрів для цієї послуги</p>
+          ) : (
+            <ul style={{ listStyle: "none", padding: 0 }}>
+              {masters.map((master) => (
+                <li key={master.id} style={{ marginBottom: 12 }}>
+                  <button
+                    onClick={() => onSelectMaster(master)}
+                    style={{
+                      width: "100%",
+                      padding: "12px",
+                      borderRadius: "8px",
+                      border: "1px solid #ccc",
+                      backgroundColor: "#f9fafb",
+                      textAlign: "left",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <strong>{master.name}</strong>
+                    {master.username && (
+                      <span style={{ color: "#6b7280", marginLeft: 8 }}>
+                        @{master.username}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </>
       )}
+
+      <button
+        onClick={onBack}
+        style={{
+          marginTop: 24,
+          padding: "8px 16px",
+          borderRadius: 8,
+          border: "none",
+          backgroundColor: "#d1d5db",
+        }}
+      >
+        ⬅️ Назад
+      </button>
     </div>
   );
 }

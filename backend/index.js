@@ -396,29 +396,60 @@ fastify.post("/master/services", async (req, reply) => {
 });
 
 fastify.post("/master/slots", async (req, reply) => {
-  const { master_id, times } = req.body;
+  const { master_id, slots } = req.body;
 
-  if (!master_id || !Array.isArray(times)) {
-    return reply.code(400).send({ error: "master_id and times required" });
+  if (!master_id || !Array.isArray(slots)) {
+    return reply.code(400).send({ error: "master_id and slots[] required" });
   }
 
   try {
     const client = await fastify.pg.connect();
 
-    for (const time of times) {
+    for (const slot of slots) {
+      const { date, time } = slot;
+      if (!date || !time) continue;
+
       await client.query(
-        "INSERT INTO master_slots (master_id, time) VALUES ($1, $2) ON CONFLICT DO NOTHING",
-        [master_id, time]
+        "INSERT INTO available_slots (master_id, date, time) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
+        [master_id, date, time]
       );
     }
 
     client.release();
     return reply.send({ message: "Слоти додано" });
   } catch (err) {
-    console.error("Error adding slots:", err);
+    console.error("❌ Error adding slots:", err);
     return reply.code(500).send({ error: "Server error" });
   }
 });
+
+fastify.get("/available-slots/:masterId/:date", async (req, reply) => {
+  const { masterId, date } = req.params;
+
+  try {
+    const client = await fastify.pg.connect();
+
+    // Отримуємо всі доступні слоти для майстра на цю дату
+    const { rows: slots } = await client.query(
+      `
+      SELECT time FROM available_slots
+      WHERE master_id = $1 AND date = $2
+      EXCEPT
+      SELECT time FROM appointments
+      WHERE master_id = $1 AND date = $2
+      `,
+      [masterId, date]
+    );
+
+    client.release();
+
+    return reply.send({ slots });
+  } catch (err) {
+    console.error("❌ Error fetching slots:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 //всьо
 
 fastify.get("/categories", async (req, reply) => {

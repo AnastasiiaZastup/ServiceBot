@@ -7,16 +7,15 @@ export default function SelectTime({
   service,
   master,
   onBack,
-  onGoToAppointments, // можна залишити для кінцевої навігації
+  onGoToAppointments,
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [bookedSlots, setBookedSlots] = useState([]);
+  const [availableTimes, setAvailableTimes] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const timeOptions = ["10:00", "11:00", "12:00", "14:00"];
   const formatDate = (date) => date.toISOString().split("T")[0];
 
-  // Винесли в колбек, щоб можна було викликати з handleSelectTime
   const fetchAppointments = useCallback(async () => {
     setLoading(true);
     try {
@@ -37,16 +36,31 @@ export default function SelectTime({
 
       setBookedSlots(slots);
     } catch (err) {
-      console.error("Помилка завантаження слотів:", err);
+      console.error("❌ Помилка завантаження записів:", err);
     } finally {
       setLoading(false);
     }
   }, [selectedDate, master.id]);
 
-  // ініціальна і при зміні дати
+  const fetchAvailableTimes = useCallback(async () => {
+    const dateString = formatDate(selectedDate);
+    try {
+      const res = await fetch(
+        `https://service-bot-backend.onrender.com/available-slots/${master.id}/${dateString}`
+      );
+      const data = await res.json();
+      const times = data.slots.map((s) => s.time.slice(0, 5));
+      setAvailableTimes(times);
+    } catch (err) {
+      console.error("❌ Помилка завантаження слотів:", err);
+      setAvailableTimes([]);
+    }
+  }, [selectedDate, master.id]);
+
   useEffect(() => {
     fetchAppointments();
-  }, [fetchAppointments]);
+    fetchAvailableTimes();
+  }, [fetchAppointments, fetchAvailableTimes]);
 
   const handleSelectTime = async (time) => {
     const dateTime = `${formatDate(selectedDate)}T${time}:00`;
@@ -66,12 +80,10 @@ export default function SelectTime({
       );
       if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
 
-      // Оновлюємо список зайнятих слотів, не виходячи з екрану
+      // оновити зайняті слоти
       await fetchAppointments();
-      // Тепер ви можете або залишитися тут, або при потребі перейти до "Мої записи":
-      // onGoToAppointments();
     } catch (err) {
-      console.error("Помилка створення запису:", err);
+      console.error("❌ Помилка створення запису:", err);
     }
   };
 
@@ -89,12 +101,14 @@ export default function SelectTime({
       </h3>
 
       {loading ? (
-        <p>Завантажуємо слоти...</p>
+        <p>Завантаження...</p>
+      ) : availableTimes.length === 0 ? (
+        <p>Немає доступних слотів на цю дату.</p>
       ) : (
         <div
           style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}
         >
-          {timeOptions.map((time) => {
+          {availableTimes.map((time) => {
             const isBooked = bookedSlots.includes(time);
             return (
               <button
