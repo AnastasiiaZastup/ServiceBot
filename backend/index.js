@@ -394,6 +394,28 @@ fastify.get(
   }
 );
 //нове
+
+fastify.get("/available-slots/:master_id/:date", async (req, reply) => {
+  const { master_id, date } = req.params;
+
+  try {
+    const client = await fastify.pg.connect();
+    const { rows } = await client.query(
+      `
+      SELECT time FROM available_slots
+      WHERE master_id = $1 AND date = $2
+      ORDER BY time
+      `,
+      [master_id, date]
+    );
+    client.release();
+    return reply.send({ slots: rows });
+  } catch (err) {
+    console.error("❌ Error fetching available slots:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 fastify.post("/master/services", async (req, reply) => {
   const { master_id, service_ids } = req.body;
 
