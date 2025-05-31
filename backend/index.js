@@ -369,6 +369,57 @@ fastify.get(
     }
   }
 );
+//нове
+fastify.post("/master/services", async (req, reply) => {
+  const { master_id, service_ids } = req.body;
+
+  if (!master_id || !Array.isArray(service_ids)) {
+    return reply
+      .code(400)
+      .send({ error: "master_id and service_ids required" });
+  }
+
+  try {
+    const client = await fastify.pg.connect();
+    for (const service_id of service_ids) {
+      await client.query(
+        "INSERT INTO masters_services (master_id, service_id) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+        [master_id, service_id]
+      );
+    }
+    client.release();
+    return reply.send({ message: "Послуги додано" });
+  } catch (err) {
+    console.error("Error adding services:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
+fastify.post("/master/slots", async (req, reply) => {
+  const { master_id, times } = req.body;
+
+  if (!master_id || !Array.isArray(times)) {
+    return reply.code(400).send({ error: "master_id and times required" });
+  }
+
+  try {
+    const client = await fastify.pg.connect();
+
+    for (const time of times) {
+      await client.query(
+        "INSERT INTO master_slots (master_id, time) VALUES ($1, $2) ON CONFLICT DO NOTHING",
+        [master_id, time]
+      );
+    }
+
+    client.release();
+    return reply.send({ message: "Слоти додано" });
+  } catch (err) {
+    console.error("Error adding slots:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+//всьо
 
 fastify.get("/categories", async (req, reply) => {
   try {

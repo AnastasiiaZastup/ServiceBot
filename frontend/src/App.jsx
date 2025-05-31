@@ -6,6 +6,7 @@ import SelectMaster from "./pages/SelectMaster.jsx";
 import SelectTime from "./pages/SelectTime.jsx";
 import MyAppointments from "./pages/MyAppointments.jsx";
 import MyAppointmentsMaster from "./pages/MyAppointmentsMaster.jsx";
+import MasterSetup from "./pages/MasterSetup.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -46,7 +47,7 @@ function App() {
       console.log("🟢 Зареєстрований користувач:", data.user);
       setUser(data.user);
       if (data.user.role === "master") {
-        setView("masterAppointments");
+        setView("masterSetup");
       } else {
         setView("category");
       }
@@ -179,6 +180,14 @@ function App() {
           master={selectedMaster}
           onBack={() => setView("selectMaster")}
           onGoToAppointments={() => setView("myAppointments")}
+        />
+      )}
+
+      {view === "masterSetup" && user && (
+        <MasterSetup
+          user={user}
+          onBack={() => setView("register")}
+          onSave={() => setView("masterAppointments")}
         />
       )}
 
