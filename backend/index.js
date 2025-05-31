@@ -234,6 +234,30 @@ fastify.post("/appointments", async (req, reply) => {
   }
 });
 
+fastify.get("/masters/:serviceId", async (req, reply) => {
+  const { serviceId } = req.params;
+
+  try {
+    const client = await fastify.pg.connect();
+
+    const { rows } = await client.query(
+      `
+      SELECT u.id, u.name, u.username, u.phone, u.telegram_id
+      FROM users u
+      JOIN masters_services ms ON ms.master_id = u.id
+      WHERE ms.service_id = $1 AND u.role = 'master'
+      `,
+      [serviceId]
+    );
+
+    client.release();
+    return reply.send({ masters: rows });
+  } catch (err) {
+    console.error("❌ Error fetching masters by service:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 fastify.get(
   "/appointments/:telegram_id",
   { preHandler: roleCheck(["client"]) },
