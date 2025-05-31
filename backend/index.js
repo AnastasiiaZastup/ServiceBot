@@ -74,10 +74,22 @@ fastify.post("/user/register", async (req, reply) => {
     );
 
     if (rows.length > 0) {
+      // 🔄 оновлюємо роль, якщо інша
+      await client.query("UPDATE users SET role = $1 WHERE telegram_id = $2", [
+        role || "client",
+        telegram_id,
+      ]);
+
+      const { rows: updatedUser } = await client.query(
+        "SELECT * FROM users WHERE telegram_id = $1",
+        [telegram_id]
+      );
+
       client.release();
-      return reply
-        .code(200)
-        .send({ message: "User already exists", user: rows[0] });
+      return reply.code(200).send({
+        message: "User already existed — role updated",
+        user: updatedUser[0],
+      });
     }
 
     const insertQuery = `
