@@ -59,7 +59,7 @@ fastify.get("/test-db", async (req, reply) => {
 });
 
 fastify.post("/user/register", async (req, reply) => {
-  const { telegram_id, name, username, phone } = req.body;
+  const { telegram_id, name, username, phone, role } = req.body;
 
   if (!telegram_id) {
     return reply.code(400).send({ error: "telegram_id is required" });
@@ -82,7 +82,7 @@ fastify.post("/user/register", async (req, reply) => {
 
     const insertQuery = `
       INSERT INTO users (telegram_id, name, username, phone, role)
-      VALUES ($1, $2, $3, $4, 'client')
+      VALUES ($1, $2, $3, $4, $5)
       RETURNING *;
     `;
 
@@ -91,6 +91,7 @@ fastify.post("/user/register", async (req, reply) => {
       name || null,
       username || null,
       phone || null,
+      role || "client",
     ]);
 
     client.release();
@@ -396,6 +397,28 @@ fastify.delete("/appointments/:id", async (req, reply) => {
     return reply.code(204).send();
   } catch (err) {
     fastify.log.error("Error deleting appointment:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
+fastify.patch("/appointments/:id/status", async (req, reply) => {
+  const id = parseInt(req.params.id, 10);
+  const { status } = req.body;
+
+  if (!["pending", "confirmed", "canceled"].includes(status)) {
+    return reply.code(400).send({ error: "Invalid status" });
+  }
+
+  try {
+    const client = await fastify.pg.connect();
+    await client.query("UPDATE appointments SET status = $1 WHERE id = $2", [
+      status,
+      id,
+    ]);
+    client.release();
+    return reply.send({ message: "Appointment updated" });
+  } catch (err) {
+    console.error("Error updating appointment:", err);
     return reply.code(500).send({ error: "Server error" });
   }
 });

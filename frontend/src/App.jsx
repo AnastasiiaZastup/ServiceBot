@@ -5,6 +5,7 @@ import Services from "./pages/Services.jsx";
 import SelectMaster from "./pages/SelectMaster.jsx";
 import SelectTime from "./pages/SelectTime.jsx";
 import MyAppointments from "./pages/MyAppointments.jsx";
+import MyAppointmentsMaster from "./pages/MyAppointmentsMaster.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -14,6 +15,7 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedMaster, setSelectedMaster] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("client");
 
   useEffect(() => {
     const tg = window.Telegram.WebApp;
@@ -35,6 +37,7 @@ function App() {
             name: telegramUser.first_name,
             username: telegramUser.username,
             phone: null,
+            role: selectedRole,
           }),
         }
       );
@@ -42,7 +45,11 @@ function App() {
       const data = await res.json();
       console.log("🟢 Зареєстрований користувач:", data.user);
       setUser(data.user);
-      setView("category");
+      if (data.user.role === "master") {
+        setView("masterAppointments");
+      } else {
+        setView("category");
+      }
     } catch (err) {
       console.error("❌ Помилка реєстрації:", err);
       alert("Не вдалося зареєструватися.");
@@ -56,7 +63,30 @@ function App() {
       {view === "register" && (
         <div style={{ padding: "16px" }}>
           <h1>Привіт, {telegramUser.first_name}! 👋</h1>
-          <p>Щоб продовжити, зареєструйся:</p>
+          <p>Вибери свою роль для тестування:</p>
+
+          <div style={{ marginBottom: "12px" }}>
+            <label>
+              <input
+                type="radio"
+                value="client"
+                checked={selectedRole === "client"}
+                onChange={(e) => setSelectedRole(e.target.value)}
+              />
+              Я клієнт 👤
+            </label>
+            <br />
+            <label>
+              <input
+                type="radio"
+                value="master"
+                checked={selectedRole === "master"}
+                onChange={(e) => setSelectedRole(e.target.value)}
+              />
+              Я майстер 🧑‍🎨
+            </label>
+          </div>
+
           <button
             onClick={handleRegister}
             style={{
@@ -69,7 +99,8 @@ function App() {
               cursor: "pointer",
             }}
           >
-            Зареєструватися
+            Зареєструватися як{" "}
+            {selectedRole === "master" ? "майстер" : "клієнт"}
           </button>
         </div>
       )}
@@ -153,6 +184,10 @@ function App() {
 
       {view === "myAppointments" && user && (
         <MyAppointments user={user} onBack={() => setView("category")} />
+      )}
+
+      {view === "masterAppointments" && user && (
+        <MyAppointmentsMaster user={user} onBack={() => setView("register")} />
       )}
     </>
   );
