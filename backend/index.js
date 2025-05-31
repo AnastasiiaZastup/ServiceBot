@@ -450,6 +450,51 @@ fastify.get("/available-slots/:masterId/:date", async (req, reply) => {
   }
 });
 
+fastify.get("/master/slots/:master_id", async (req, reply) => {
+  const master_id = req.params.master_id;
+
+  try {
+    const client = await fastify.pg.connect();
+    const { rows } = await client.query(
+      `SELECT date, time FROM available_slots WHERE master_id = $1 ORDER BY date, time`,
+      [master_id]
+    );
+    client.release();
+    return reply.send({ slots: rows });
+  } catch (err) {
+    console.error("❌ Error fetching master slots:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
+fastify.patch("/user/role", async (req, reply) => {
+  const { telegram_id, new_role } = req.body;
+
+  if (!telegram_id || !["client", "master"].includes(new_role)) {
+    return reply.code(400).send({ error: "Невірні дані" });
+  }
+
+  try {
+    const client = await fastify.pg.connect();
+
+    const { rowCount } = await client.query(
+      "UPDATE users SET role = $1 WHERE telegram_id = $2",
+      [new_role, telegram_id]
+    );
+
+    client.release();
+
+    if (rowCount === 0) {
+      return reply.code(404).send({ error: "Користувача не знайдено" });
+    }
+
+    return reply.send({ message: "Роль змінено", role: new_role });
+  } catch (err) {
+    console.error("❌ Error updating role:", err);
+    return reply.code(500).send({ error: "Server error" });
+  }
+});
+
 //всьо
 
 fastify.get("/categories", async (req, reply) => {

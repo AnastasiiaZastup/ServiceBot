@@ -107,14 +107,58 @@ function App() {
       )}
 
       {view === "category" && (
-        <SelectCategory
-          onSelectCategory={(category) => {
-            console.log("🟢 Обрано категорію:", category);
-            setSelectedCategory(category);
-            setView("services");
-          }}
-          onViewAppointments={() => setView("myAppointments")}
-        />
+        <div style={{ padding: 16 }}>
+          <SelectCategory
+            onSelectCategory={(category) => {
+              console.log("🟢 Обрано категорію:", category);
+              setSelectedCategory(category);
+              setView("services");
+            }}
+            onViewAppointments={() => setView("myAppointments")}
+          />
+
+          {user?.role === "client" && (
+            <button
+              onClick={async () => {
+                try {
+                  const res = await fetch(
+                    "https://service-bot-backend.onrender.com/user/role",
+                    {
+                      method: "PATCH",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        telegram_id: user.telegram_id,
+                        new_role: "master",
+                      }),
+                    }
+                  );
+
+                  const data = await res.json();
+                  if (res.ok) {
+                    alert("🎉 Ви тепер майстер!");
+                    setUser({ ...user, role: "master" });
+                    setView("masterSetup");
+                  } else {
+                    alert("❌ Помилка: " + (data?.error || "Невідомо"));
+                  }
+                } catch (err) {
+                  console.error("❌ Помилка оновлення ролі:", err);
+                  alert("Помилка при переході в режим майстра.");
+                }
+              }}
+              style={{
+                marginTop: 24,
+                padding: "10px 16px",
+                backgroundColor: "#f59e0b",
+                color: "#fff",
+                border: "none",
+                borderRadius: 8,
+              }}
+            >
+              🎨 Стати майстром
+            </button>
+          )}
+        </div>
       )}
 
       {view === "services" && user && selectedCategory && (

@@ -128,6 +128,18 @@ export default function MasterSetup({ user, onBack, onSave }) {
             cursor: "pointer",
           }}
         >
+          {slots.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              <h4>🗓️ Додані слоти:</h4>
+              <ul>
+                {slots.map((s, idx) => (
+                  <li key={idx}>
+                    📅 {s.date} ⏰ {s.time}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           💾 Зберегти
         </button>
       </div>
