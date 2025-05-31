@@ -242,10 +242,10 @@ fastify.get("/masters/:serviceId", async (req, reply) => {
 
     const { rows } = await client.query(
       `
-      SELECT u.id, u.name, u.username, u.phone, u.telegram_id
-      FROM users u
-      JOIN masters_services ms ON ms.master_id = u.id
-      WHERE ms.service_id = $1 AND u.role = 'master'
+      SELECT DISTINCT ON (users.id) users.id, users.name, users.username, users.phone, users.telegram_id
+      FROM users
+      JOIN masters_services ON users.id = masters_services.master_id
+      WHERE masters_services.service_id = $1 AND users.role = 'master'
       `,
       [serviceId]
     );
