@@ -15,8 +15,7 @@ export default function SelectTime({
 
   // Форматуємо дату у локальному часовому поясі як YYYY-MM-DD
   const formatLocalDate = (date) => {
-    const tzOffset = date.getTimezoneOffset() * 60000;
-    return new Date(date - tzOffset).toISOString().split("T")[0];
+    return date.toLocaleDateString("sv-SE"); // формат YYYY-MM-DD гарантовано
   };
 
   const fetchAvailableSlots = useCallback(async () => {
