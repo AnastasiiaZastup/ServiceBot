@@ -2,6 +2,43 @@ import Fastify from "fastify";
 import fastifyPostgres from "@fastify/postgres";
 import fastifyCors from "@fastify/cors";
 import dotenv from "dotenv";
+import fetch from "node-fetch"; // якщо ще не імпортовано
+
+const BOT_TOKEN =
+  process.env.BOT_TOKEN || "7842494100:AAFzOA_AwZEr-titLsOozCAz2thcYdfu3GE";
+
+/**
+ * Надсилає повідомлення користувачу в Telegram
+ * @param {string|number} chatId — telegram_id користувача
+ * @param {string} text — текст повідомлення
+ */
+async function sendTelegramMessage(chatId, text) {
+  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        chat_id: chatId,
+        text: text,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!result.ok) {
+      console.error("❌ Telegram error:", result);
+    } else {
+      console.log("📩 Повідомлення надіслано:", result);
+    }
+
+    return result;
+  } catch (error) {
+    console.error("❌ Помилка надсилання повідомлення в Telegram:", error);
+    return null;
+  }
+}
 
 dotenv.config();
 console.log("✅ DATABASE_URL:", process.env.DATABASE_URL);
@@ -612,17 +649,7 @@ fastify.patch("/appointments/:id/status", async (req, reply) => {
 
     // 3. Надіслати повідомлення
     if (message && a.telegram_id) {
-      const botToken = process.env.BOT_TOKEN || "ТВОЙ_Бот_Token";
-      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-      await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: a.telegram_id,
-          text: message,
-        }),
-      });
+      await sendTelegramMessage(a.telegram_id, message);
     }
 
     reply.send({ success: true });
