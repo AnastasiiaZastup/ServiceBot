@@ -11,11 +11,11 @@ export default function SelectTime({
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [availableTimes, setAvailableTimes] = useState([]);
+  const [bookedTimes, setBookedTimes] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Форматуємо дату у локальному часовому поясі як YYYY-MM-DD
   const formatLocalDate = (date) => {
-    return date.toLocaleDateString("sv-SE"); // формат YYYY-MM-DD гарантовано
+    return date.toLocaleDateString("sv-SE"); // YYYY-MM-DD
   };
 
   const fetchAvailableSlots = useCallback(async () => {
@@ -27,17 +27,32 @@ export default function SelectTime({
         }/${formatLocalDate(selectedDate)}`
       );
       const data = await res.json();
-      setAvailableTimes(data.slots.map((s) => s.time.slice(0, 5))); // формат HH:MM
+      setAvailableTimes(data.slots.map((s) => s.time.slice(0, 5)));
     } catch (err) {
       console.error("❌ Помилка завантаження слотів:", err);
     } finally {
       setLoading(false);
     }
-  }, [selectedDate, master.id]);
+  }, [master.id, selectedDate]);
+
+  const fetchBookedSlots = useCallback(async () => {
+    try {
+      const res = await fetch(
+        `https://service-bot-backend.onrender.com/appointments/booked/${
+          master.id
+        }/${formatLocalDate(selectedDate)}`
+      );
+      const data = await res.json();
+      setBookedTimes(data.slots.map((s) => s.time.slice(0, 5)));
+    } catch (err) {
+      console.error("❌ Помилка отримання зайнятих слотів:", err);
+    }
+  }, [master.id, selectedDate]);
 
   useEffect(() => {
     fetchAvailableSlots();
-  }, [fetchAvailableSlots]);
+    fetchBookedSlots();
+  }, [fetchAvailableSlots, fetchBookedSlots]);
 
   const handleSelectTime = async (time) => {
     const dateTime = `${formatLocalDate(selectedDate)}T${time}:00`;
@@ -87,22 +102,26 @@ export default function SelectTime({
         <div
           style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}
         >
-          {availableTimes.map((time) => (
-            <button
-              key={time}
-              onClick={() => handleSelectTime(time)}
-              style={{
-                padding: "8px 12px",
-                borderRadius: 8,
-                border: "none",
-                backgroundColor: "#10b981",
-                color: "#fff",
-                cursor: "pointer",
-              }}
-            >
-              {time}
-            </button>
-          ))}
+          {availableTimes.map((time) => {
+            const isBooked = bookedTimes.includes(time);
+            return (
+              <button
+                key={time}
+                onClick={() => !isBooked && handleSelectTime(time)}
+                style={{
+                  padding: "8px 12px",
+                  borderRadius: 8,
+                  border: "none",
+                  backgroundColor: isBooked ? "#d1d5db" : "#10b981",
+                  color: isBooked ? "#6b7280" : "#fff",
+                  cursor: isBooked ? "not-allowed" : "pointer",
+                }}
+                disabled={isBooked}
+              >
+                {time}
+              </button>
+            );
+          })}
         </div>
       )}
 

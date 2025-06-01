@@ -592,6 +592,23 @@ fastify.patch("/appointments/:id/status", async (req, reply) => {
   }
 });
 
+fastify.get("/appointments/booked/:masterId/:date", async (req, reply) => {
+  const { masterId, date } = req.params;
+  const client = await fastify.pg.connect();
+  try {
+    const { rows } = await client.query(
+      "SELECT time FROM appointments WHERE master_id = $1 AND date = $2",
+      [masterId, date]
+    );
+    reply.send({ slots: rows });
+  } catch (err) {
+    console.error("❌ Помилка отримання зайнятих слотів:", err);
+    reply.code(500).send({ error: "Помилка сервера" });
+  } finally {
+    client.release();
+  }
+});
+
 // Тут можна додати маршрути для майстрів, категорій, сервісів тощо
 
 const start = async () => {
