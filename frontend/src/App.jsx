@@ -1,3 +1,4 @@
+// 🔧 ОНОВЛЕНИЙ App.jsx
 import React, { useState, useEffect } from "react";
 import SelectCategory from "./pages/SelectCategory.jsx";
 import Services from "./pages/Services.jsx";
@@ -15,8 +16,6 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedMaster, setSelectedMaster] = useState(null);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
 
   useEffect(() => {
     const tg = window.Telegram.WebApp;
@@ -25,32 +24,25 @@ function App() {
     setTelegramUser(userFromTelegram);
 
     if (userFromTelegram) {
-      const isMaster = userFromTelegram.username === "zastup_anastasia";
-
-      if (isMaster) {
-        fetch("https://service-bot-backend.onrender.com/user/register", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            telegram_id: userFromTelegram.id,
-            name: userFromTelegram.first_name,
-            username: userFromTelegram.username,
-            phone: null,
-            role: "master",
-          }),
-        })
-          .then((res) => res.json())
-          .then((data) => {
+      fetch(
+        `https://service-bot-backend.onrender.com/user/${userFromTelegram.id}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.user) {
             setUser(data.user);
-            setView("masterSetup");
-          });
-      } else {
-        setView("register");
-      }
+            setView(data.user.role === "master" ? "masterSetup" : "category");
+          } else {
+            setView("register");
+          }
+        });
     }
   }, []);
 
-  const handleClientRegister = async () => {
+  const [formName, setFormName] = useState("");
+  const [formPhone, setFormPhone] = useState("");
+
+  const handleRegister = async () => {
     try {
       const res = await fetch(
         "https://service-bot-backend.onrender.com/user/register",
@@ -59,9 +51,9 @@ function App() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             telegram_id: telegramUser.id,
-            name,
+            name: formName,
             username: telegramUser.username,
-            phone,
+            phone: formPhone,
             role: "client",
           }),
         }
@@ -78,46 +70,45 @@ function App() {
 
   if (!telegramUser) return <p>Завантаження Telegram-користувача...</p>;
 
+  if (view === "register") {
+    if (telegramUser.username === "zastup_anastasia") {
+      return <p>Завантаження...</p>; // вже редіректиться через useEffect
+    }
+    return (
+      <div style={{ padding: "16px" }}>
+        <h1>Привіт, {telegramUser.first_name}! 👋</h1>
+        <p>Будь ласка, зареєструйтесь як клієнт:</p>
+        <input
+          placeholder="Ваше ім'я"
+          value={formName}
+          onChange={(e) => setFormName(e.target.value)}
+          style={{ display: "block", marginBottom: 8, width: "100%" }}
+        />
+        <input
+          placeholder="Номер телефону"
+          value={formPhone}
+          onChange={(e) => setFormPhone(e.target.value)}
+          style={{ display: "block", marginBottom: 12, width: "100%" }}
+        />
+        <button
+          onClick={handleRegister}
+          style={{
+            padding: "10px 20px",
+            fontSize: "16px",
+            backgroundColor: "#2b82f6",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+          }}
+        >
+          Зареєструватися
+        </button>
+      </div>
+    );
+  }
+
   return (
     <>
-      {view === "register" && (
-        <div style={{ padding: "16px" }}>
-          <h1>Привіт, {telegramUser.first_name}! 👋</h1>
-          <p>Будь ласка, зареєструйтесь як клієнт:</p>
-
-          <input
-            type="text"
-            placeholder="Ваше ім’я"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={{ padding: "8px", marginBottom: "8px", width: "100%" }}
-          />
-          <input
-            type="tel"
-            placeholder="Номер телефону"
-            value={phone}
-            onChange={(e) => setPhone(e.target.value)}
-            style={{ padding: "8px", marginBottom: "12px", width: "100%" }}
-          />
-
-          <button
-            onClick={handleClientRegister}
-            style={{
-              padding: "10px 20px",
-              fontSize: "16px",
-              backgroundColor: "#2b82f6",
-              color: "white",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-              width: "100%",
-            }}
-          >
-            Зареєструватися
-          </button>
-        </div>
-      )}
-
       {view === "category" && (
         <div style={{ padding: 16 }}>
           <SelectCategory
@@ -131,22 +122,10 @@ function App() {
       )}
 
       {view === "services" && user && selectedCategory && (
-        <div style={{ padding: "16px" }}>
-          <button
-            onClick={() => setView("category")}
-            style={{
-              marginBottom: "16px",
-              padding: "8px 16px",
-              backgroundColor: "#2b2b2b",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
+        <div style={{ padding: 16 }}>
+          <button onClick={() => setView("category")}>
             ⬅ Назад до категорій
           </button>
-
           <Services
             user={user}
             category={selectedCategory}
@@ -155,19 +134,7 @@ function App() {
               setView("selectMaster");
             }}
           />
-
-          <button
-            onClick={() => setView("myAppointments")}
-            style={{
-              marginTop: "16px",
-              padding: "10px 20px",
-              backgroundColor: "#3b82f6",
-              color: "#fff",
-              border: "none",
-              borderRadius: "8px",
-              cursor: "pointer",
-            }}
-          >
+          <button onClick={() => setView("myAppointments")}>
             📅 Мої записи
           </button>
         </div>
@@ -200,6 +167,7 @@ function App() {
           user={user}
           onBack={() => setView("register")}
           onSave={() => setView("masterAppointments")}
+          onViewAppointments={() => setView("masterAppointments")}
         />
       )}
 
@@ -208,7 +176,10 @@ function App() {
       )}
 
       {view === "masterAppointments" && user && (
-        <MyAppointmentsMaster user={user} onBack={() => setView("register")} />
+        <MyAppointmentsMaster
+          user={user}
+          onBack={() => setView("masterSetup")}
+        />
       )}
     </>
   );

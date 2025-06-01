@@ -4,7 +4,7 @@ export default function MasterSetup({
   user,
   onBack,
   onSave,
-  onGoToAppointments,
+  onViewAppointments,
 }) {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
@@ -123,7 +123,6 @@ export default function MasterSetup({
         <button onClick={onBack} style={{ marginRight: 12 }}>
           ⬅️ Назад
         </button>
-
         <button
           onClick={saveAll}
           style={{
@@ -138,9 +137,8 @@ export default function MasterSetup({
         >
           💾 Зберегти
         </button>
-
         <button
-          onClick={onGoToAppointments}
+          onClick={onViewAppointments}
           style={{
             backgroundColor: "#3b82f6",
             color: "#fff",
