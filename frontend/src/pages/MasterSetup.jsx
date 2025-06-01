@@ -40,6 +40,8 @@ export default function MasterSetup({ user, onBack, onSave }) {
     setSlotTime("");
   };
 
+  console.log("📌 Master ID для збереження:", user?.id);
+
   // Зберегти всі дані
   const saveAll = async () => {
     try {
