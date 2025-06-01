@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import Register from "./pages/Register.jsx";
 import SelectCategory from "./pages/SelectCategory.jsx";
 import Services from "./pages/Services.jsx";
 import SelectMaster from "./pages/SelectMaster.jsx";
