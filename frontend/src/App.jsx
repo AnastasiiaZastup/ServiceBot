@@ -147,7 +147,7 @@ function App() {
                     alert("❌ Помилка: " + (data?.error || "Невідомо"));
                   }
                 } catch (err) {
-                  console.error("❌ Помилка оновлення ролі:", err);
+                  console.error("Помилка оновлення ролі:", err);
                   alert("Помилка при переході в режим майстра.");
                 }
               }}
