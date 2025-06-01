@@ -1,4 +1,3 @@
-// src/pages/Register.jsx
 import React, { useEffect, useState } from "react";
 
 export default function Register({ onRegister }) {
@@ -27,7 +26,11 @@ export default function Register({ onRegister }) {
       );
 
       const data = await res.json();
-      onRegister(data.user); // ✅ Переходимо далі
+
+      // Покажемо id в alert:
+      alert(`Зареєстровано з ID: ${data.user?.id}`);
+
+      onRegister(data.user); // обовʼязково передаємо user далі
     } catch {
       alert("Помилка реєстрації");
     }
