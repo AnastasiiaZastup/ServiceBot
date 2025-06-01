@@ -60,7 +60,10 @@ export default function MasterSetup({ user, onBack, onSave }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           master_id: user.id,
-          slots: slots,
+          slots: slots.map((s) => ({
+            date: new Date(s.date).toISOString().split("T")[0], // ✅ гарантує формат YYYY-MM-DD
+            time: s.time,
+          })),
         }),
       });
 
