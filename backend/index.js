@@ -596,14 +596,45 @@ fastify.get("/services-by-category/:category_id", async (req, reply) => {
 // Видалення запису (скасування)
 fastify.delete("/appointments/:id", async (req, reply) => {
   const id = parseInt(req.params.id, 10);
+  const client = await fastify.pg.connect();
+
   try {
-    const client = await fastify.pg.connect();
+    // 🔎 Отримуємо всі деталі перед видаленням
+    const { rows } = await client.query(
+      `SELECT a.date, a.time, u.telegram_id AS master_telegram_id,
+              s.name AS service_name, u.name AS master_name
+       FROM appointments a
+       JOIN users u ON a.master_id = u.id
+       JOIN services s ON a.service_id = s.id
+       WHERE a.id = $1`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      client.release();
+      return reply.code(404).send({ error: "Appointment not found" });
+    }
+
+    const a = rows[0];
+    const timeFormatted = a.time.slice(0, 5);
+    const dateFormatted = new Date(a.date).toLocaleDateString("uk-UA");
+
+    const text = `⚠️ Запис на послугу "${a.service_name}" було скасовано клієнтом.\n🗓 ${dateFormatted} о ${timeFormatted}`;
+
+    // ✅ Надсилаємо повідомлення майстру
+    if (a.master_telegram_id) {
+      await sendTelegramMessage(a.master_telegram_id, text);
+    }
+
+    // 🗑 Видаляємо запис
     await client.query("DELETE FROM appointments WHERE id = $1", [id]);
-    client.release();
-    return reply.code(204).send();
+
+    reply.code(204).send();
   } catch (err) {
-    fastify.log.error("Error deleting appointment:", err);
-    return reply.code(500).send({ error: "Server error" });
+    fastify.log.error("❌ Error deleting appointment:", err);
+    reply.code(500).send({ error: "Server error" });
+  } finally {
+    client.release();
   }
 });
 
