@@ -431,12 +431,23 @@ fastify.post("/master/slots", async (req, reply) => {
     const client = await fastify.pg.connect();
 
     for (const slot of slots) {
-      const { date, time } = slot;
+      let { date, time } = slot;
+
       if (!date || !time) continue;
+
+      // 🛠 Нормалізація
+      const normalizedDate = new Date(date).toISOString().split("T")[0];
+      const normalizedTime = time.length === 5 ? `${time}:00` : time;
+
+      console.log("🛠 Додавання слота:", {
+        master_id,
+        date: normalizedDate,
+        time: normalizedTime,
+      });
 
       await client.query(
         "INSERT INTO available_slots (master_id, date, time) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
-        [master_id, date, time]
+        [master_id, normalizedDate, normalizedTime]
       );
     }
 
