@@ -134,8 +134,14 @@ function App() {
 
                   const data = await res.json();
                   if (res.ok) {
+                    // 🆕 Отримуємо оновленого користувача з бекенду
+                    const updated = await fetch(
+                      `https://service-bot-backend.onrender.com/user/${user.telegram_id}`
+                    );
+                    const updatedData = await updated.json();
+
                     alert("🎉 Ви тепер майстер!");
-                    setUser({ ...user, role: "master" });
+                    setUser(updatedData.user);
                     setView("masterSetup");
                   } else {
                     alert("❌ Помилка: " + (data?.error || "Невідомо"));
