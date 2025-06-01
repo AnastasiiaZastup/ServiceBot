@@ -15,7 +15,8 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedMaster, setSelectedMaster] = useState(null);
-  const [selectedRole, setSelectedRole] = useState("client");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
 
   useEffect(() => {
     const tg = window.Telegram.WebApp;
@@ -24,29 +25,32 @@ function App() {
     setTelegramUser(userFromTelegram);
 
     if (userFromTelegram) {
-      const predefinedRole =
-        userFromTelegram.username === "zastup_anastasia" ? "master" : "client";
+      const isMaster = userFromTelegram.username === "zastup_anastasia";
 
-      fetch("https://service-bot-backend.onrender.com/user/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          telegram_id: userFromTelegram.id,
-          name: userFromTelegram.first_name,
-          username: userFromTelegram.username,
-          role: predefinedRole,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          setUser(data.user);
-          setSelectedRole(predefinedRole);
-          setView(predefinedRole === "master" ? "masterSetup" : "category");
-        });
+      if (isMaster) {
+        fetch("https://service-bot-backend.onrender.com/user/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            telegram_id: userFromTelegram.id,
+            name: userFromTelegram.first_name,
+            username: userFromTelegram.username,
+            phone: null,
+            role: "master",
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            setUser(data.user);
+            setView("masterSetup");
+          });
+      } else {
+        setView("register");
+      }
     }
   }, []);
 
-  const handleRegister = async () => {
+  const handleClientRegister = async () => {
     try {
       const res = await fetch(
         "https://service-bot-backend.onrender.com/user/register",
@@ -55,22 +59,17 @@ function App() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             telegram_id: telegramUser.id,
-            name: telegramUser.first_name,
+            name,
             username: telegramUser.username,
-            phone: null,
-            role: selectedRole,
+            phone,
+            role: "client",
           }),
         }
       );
 
       const data = await res.json();
-      console.log("🟢 Зареєстрований користувач:", data.user);
       setUser(data.user);
-      if (data.user.role === "master") {
-        setView("masterSetup");
-      } else {
-        setView("category");
-      }
+      setView("category");
     } catch (err) {
       console.error("❌ Помилка реєстрації:", err);
       alert("Не вдалося зареєструватися.");
@@ -84,32 +83,25 @@ function App() {
       {view === "register" && (
         <div style={{ padding: "16px" }}>
           <h1>Привіт, {telegramUser.first_name}! 👋</h1>
-          <p>Вибери свою роль для тестування:</p>
+          <p>Будь ласка, зареєструйтесь як клієнт:</p>
 
-          <div style={{ marginBottom: "12px" }}>
-            <label>
-              <input
-                type="radio"
-                value="client"
-                checked={selectedRole === "client"}
-                onChange={(e) => setSelectedRole(e.target.value)}
-              />
-              Я клієнт 👤
-            </label>
-            <br />
-            <label>
-              <input
-                type="radio"
-                value="master"
-                checked={selectedRole === "master"}
-                onChange={(e) => setSelectedRole(e.target.value)}
-              />
-              Я майстер 🧑‍🎨
-            </label>
-          </div>
+          <input
+            type="text"
+            placeholder="Ваше ім’я"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ padding: "8px", marginBottom: "8px", width: "100%" }}
+          />
+          <input
+            type="tel"
+            placeholder="Номер телефону"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            style={{ padding: "8px", marginBottom: "12px", width: "100%" }}
+          />
 
           <button
-            onClick={handleRegister}
+            onClick={handleClientRegister}
             style={{
               padding: "10px 20px",
               fontSize: "16px",
@@ -118,10 +110,10 @@ function App() {
               border: "none",
               borderRadius: "8px",
               cursor: "pointer",
+              width: "100%",
             }}
           >
-            Зареєструватися як{" "}
-            {selectedRole === "master" ? "майстер" : "клієнт"}
+            Зареєструватися
           </button>
         </div>
       )}
@@ -130,60 +122,11 @@ function App() {
         <div style={{ padding: 16 }}>
           <SelectCategory
             onSelectCategory={(category) => {
-              console.log("🟢 Обрано категорію:", category);
               setSelectedCategory(category);
               setView("services");
             }}
             onViewAppointments={() => setView("myAppointments")}
           />
-
-          {user?.role === "client" && (
-            <button
-              onClick={async () => {
-                try {
-                  const res = await fetch(
-                    "https://service-bot-backend.onrender.com/user/role",
-                    {
-                      method: "PATCH",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        telegram_id: user.telegram_id,
-                        new_role: "master",
-                      }),
-                    }
-                  );
-
-                  const data = await res.json();
-                  if (res.ok) {
-                    // 🆕 Отримуємо оновленого користувача з бекенду
-                    const updated = await fetch(
-                      `https://service-bot-backend.onrender.com/user/${user.telegram_id}`
-                    );
-                    const updatedData = await updated.json();
-
-                    alert("🎉 Ви тепер майстер!");
-                    setUser(updatedData.user);
-                    setView("masterSetup");
-                  } else {
-                    alert("❌ Помилка: " + (data?.error || "Невідомо"));
-                  }
-                } catch (err) {
-                  console.error("Помилка оновлення ролі:", err);
-                  alert("Помилка при переході в режим майстра.");
-                }
-              }}
-              style={{
-                marginTop: 24,
-                padding: "10px 16px",
-                backgroundColor: "#f59e0b",
-                color: "#fff",
-                border: "none",
-                borderRadius: 8,
-              }}
-            >
-              🎨 Стати майстром
-            </button>
-          )}
         </div>
       )}
 
@@ -236,7 +179,6 @@ function App() {
           service={selectedService}
           onBack={() => setView("services")}
           onSelectMaster={(master) => {
-            console.log("🟢 Обрано майстра:", master);
             setSelectedMaster(master);
             setView("selectTime");
           }}
@@ -258,7 +200,6 @@ function App() {
           user={user}
           onBack={() => setView("register")}
           onSave={() => setView("masterAppointments")}
-          onGoToAppointments={() => setView("masterAppointments")}
         />
       )}
 
