@@ -21,16 +21,17 @@ export default function Register({ onRegister }) {
             name: telegramUser.first_name,
             username: telegramUser.username,
             phone: null,
+            role: "master", // 🔧 важливо!
           }),
         }
       );
 
       const data = await res.json();
 
-      // Покажемо id в alert:
-      alert(`Зареєстровано з ID: ${data.user?.id}`);
+      // Виводимо повну відповідь:
+      alert("Сервер повернув:\n" + JSON.stringify(data, null, 2));
 
-      onRegister(data.user); // обовʼязково передаємо user далі
+      onRegister(data.user); // зберігаємо об'єкт з id
     } catch {
       alert("Помилка реєстрації");
     }
