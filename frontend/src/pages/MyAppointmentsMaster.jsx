@@ -60,7 +60,8 @@ export default function MyAppointmentsMaster({ user, onBack }) {
             >
               <strong>{a.service_title}</strong> <br />
               👤 Клієнт: {a.client_name} <br />
-              📅 {a.date} 🕒 {a.time} <br />
+              📅 {new Date(a.date).toLocaleDateString()} 🕒 {a.time.slice(0, 5)}{" "}
+              <br />
               📌 Статус: <strong>{a.status}</strong> <br />
               <div style={{ marginTop: 8 }}>
                 <button

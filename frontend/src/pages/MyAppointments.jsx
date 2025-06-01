@@ -64,7 +64,8 @@ export default function MyAppointments({ user, onBack }) {
             >
               <strong>{a.service_title}</strong> <br />
               👩‍🎨 Майстер: {a.master_name} <br />
-              🕒 {a.date} {a.time} <br />
+              📅 {new Date(a.date).toLocaleDateString()} 🕒 {a.time.slice(0, 5)}{" "}
+              <br />
               <button
                 onClick={() => cancelAppointment(a.id)}
                 style={{
