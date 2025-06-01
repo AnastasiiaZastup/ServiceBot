@@ -180,7 +180,7 @@ function App() {
               cursor: "pointer",
             }}
           >
-            ⬅️ Назад до категорій
+            ⬅️Назад до категорій
           </button>
 
           <Services
