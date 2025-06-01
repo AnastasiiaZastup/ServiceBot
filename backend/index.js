@@ -571,24 +571,69 @@ fastify.delete("/appointments/:id", async (req, reply) => {
 });
 
 fastify.patch("/appointments/:id/status", async (req, reply) => {
-  const id = parseInt(req.params.id, 10);
+  const { id } = req.params;
   const { status } = req.body;
 
-  if (!["pending", "confirmed", "canceled"].includes(status)) {
-    return reply.code(400).send({ error: "Invalid status" });
-  }
-
+  const client = await fastify.pg.connect();
   try {
-    const client = await fastify.pg.connect();
+    // 1. Оновити статус у базі
     await client.query("UPDATE appointments SET status = $1 WHERE id = $2", [
       status,
       id,
     ]);
-    client.release();
-    return reply.send({ message: "Appointment updated" });
+
+    // 2. Отримати всі потрібні дані для повідомлення
+    const { rows } = await client.query(
+      `SELECT appointments.date, appointments.time, appointments.status,
+              users.telegram_id, users.name as client_name,
+              services.name as service_name
+       FROM appointments
+       JOIN users ON appointments.user_id = users.id
+       JOIN services ON appointments.service_id = services.id
+       WHERE appointments.id = $1`,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return reply.code(404).send({ error: "Appointment not found" });
+    }
+
+    const a = rows[0];
+    const timeFormatted = a.time.slice(0, 5);
+    const dateFormatted = new Date(a.date).toLocaleDateString("uk-UA");
+
+    let message = "";
+
+    if (status === "confirmed") {
+      message = `✅ Ваш запис підтверджено!\nПослуга: ${a.service_name}\nДата: ${dateFormatted}\nЧас: ${timeFormatted}`;
+    } else if (status === "canceled") {
+      message = `❌ Ваш запис на послугу "${a.service_name}" скасовано.\nБудь ласка, оберіть інший час.`;
+    }
+
+    // 3. Надіслати повідомлення
+    if (message && a.telegram_id) {
+      const botToken = process.env.BOT_TOKEN || "ТВОЙ_Бот_Token";
+      const url = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+      await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          chat_id: a.telegram_id,
+          text: message,
+        }),
+      });
+    }
+
+    reply.send({ success: true });
   } catch (err) {
-    console.error("Error updating appointment:", err);
-    return reply.code(500).send({ error: "Server error" });
+    console.error(
+      "❌ Помилка при оновленні статусу/відправці повідомлення:",
+      err
+    );
+    reply.code(500).send({ error: "Помилка сервера" });
+  } finally {
+    client.release();
   }
 });
 
