@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from "react";
 
-export default function MasterSetup({ user, onBack, onSave }) {
+export default function MasterSetup({
+  user,
+  onBack,
+  onSave,
+  onGoToAppointments,
+}) {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
   const [slotDate, setSlotDate] = useState("");
   const [slotTime, setSlotTime] = useState("");
   const [slots, setSlots] = useState([]);
 
-  // Отримати список послуг
   useEffect(() => {
     const fetchServices = async () => {
       try {
@@ -23,7 +27,6 @@ export default function MasterSetup({ user, onBack, onSave }) {
     fetchServices();
   }, []);
 
-  // Додати або прибрати послугу
   const toggleService = (serviceId) => {
     setSelectedServices((prev) =>
       prev.includes(serviceId)
@@ -32,7 +35,6 @@ export default function MasterSetup({ user, onBack, onSave }) {
     );
   };
 
-  // Додати слот до списку
   const addSlot = () => {
     if (!slotDate || !slotTime) return;
     setSlots([...slots, { date: slotDate, time: slotTime }]);
@@ -40,12 +42,8 @@ export default function MasterSetup({ user, onBack, onSave }) {
     setSlotTime("");
   };
 
-  console.log("📌 Master ID для збереження:", user?.id);
-
-  // Зберегти всі дані
   const saveAll = async () => {
     try {
-      // Зберігаємо обрані послуги
       await fetch("https://service-bot-backend.onrender.com/master/services", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -55,7 +53,6 @@ export default function MasterSetup({ user, onBack, onSave }) {
         }),
       });
 
-      // Зберігаємо слоти з коректними форматами
       await fetch("https://service-bot-backend.onrender.com/master/slots", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -126,6 +123,7 @@ export default function MasterSetup({ user, onBack, onSave }) {
         <button onClick={onBack} style={{ marginRight: 12 }}>
           ⬅️ Назад
         </button>
+
         <button
           onClick={saveAll}
           style={{
@@ -135,9 +133,24 @@ export default function MasterSetup({ user, onBack, onSave }) {
             border: "none",
             borderRadius: 6,
             cursor: "pointer",
+            marginRight: 12,
           }}
         >
           💾 Зберегти
+        </button>
+
+        <button
+          onClick={onGoToAppointments}
+          style={{
+            backgroundColor: "#3b82f6",
+            color: "#fff",
+            padding: "6px 12px",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+          }}
+        >
+          📅 Переглянути записи
         </button>
       </div>
     </div>

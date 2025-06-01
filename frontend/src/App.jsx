@@ -20,9 +20,30 @@ function App() {
   useEffect(() => {
     const tg = window.Telegram.WebApp;
     tg.expand();
-    const userFromTelegram = tg.initDataUnsafe?.user || null;
-    console.log("🟢 Telegram user:", userFromTelegram);
+    const userFromTelegram = tg.initDataUnsafe?.user;
     setTelegramUser(userFromTelegram);
+
+    if (userFromTelegram) {
+      const predefinedRole =
+        userFromTelegram.username === "zastup_anastasia" ? "master" : "client";
+
+      fetch("https://service-bot-backend.onrender.com/user/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          telegram_id: userFromTelegram.id,
+          name: userFromTelegram.first_name,
+          username: userFromTelegram.username,
+          role: predefinedRole,
+        }),
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          setUser(data.user);
+          setSelectedRole(predefinedRole);
+          setView(predefinedRole === "master" ? "masterSetup" : "category");
+        });
+    }
   }, []);
 
   const handleRegister = async () => {
@@ -237,6 +258,7 @@ function App() {
           user={user}
           onBack={() => setView("register")}
           onSave={() => setView("masterAppointments")}
+          onGoToAppointments={() => setView("masterAppointments")}
         />
       )}
 
