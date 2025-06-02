@@ -1,11 +1,11 @@
 /* components/Card.module.css */
 .card {
-  background-color: #ffffff;
-  border-radius: 16px;
+  background-color: white;
+  border-radius: 12px;
   padding: 16px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
-  margin-bottom: 16px;
-  transition: box-shadow 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-sizing: border-box;
+  width: 100%; /* важливо! */
 }
 
 .card:hover {

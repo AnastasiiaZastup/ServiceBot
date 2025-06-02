@@ -54,9 +54,9 @@ export default function MyAppointments({ user, onBack, showToast }) {
       {appointments.length === 0 ? (
         <p>У вас поки нема записів.</p>
       ) : (
-        <ul style={{ listStyle: "none", padding: 0 }}>
+        <ul style={{ listStyle: "none", padding: 0, margin: 0, width: "100%" }}>
           {appointments.map((a) => (
-            <li key={a.id} style={{ marginBottom: 16 }}>
+            <li key={a.id} style={{ marginBottom: 16, width: "100%" }}>
               <Card style={{ width: "100%" }}>
                 <strong>{a.service_title}</strong> <br />
                 👩‍🎨 Майстер: {a.master_name} <br />
