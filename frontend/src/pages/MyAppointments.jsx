@@ -13,7 +13,9 @@ export default function MyAppointments({ user, onBack, showToast }) {
       );
       if (!res.ok) throw new Error(res.statusText);
       const data = await res.json();
-      setAppointments(data.appointments || []);
+      setAppointments(data.appointments || []).filter(
+        (a) => a.status !== "canceled"
+      );
     } catch (err) {
       console.error("❌ Помилка отримання записів:", err);
       showToast("❌ Помилка завантаження записів", "error");
@@ -56,12 +58,19 @@ export default function MyAppointments({ user, onBack, showToast }) {
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
           {appointments.map((a) => (
-            <li key={a.id} style={{ marginBottom: 16 }}>
-              <Card>
+            <li key={a.id} style={{ marginBottom: 16, width: "100%" }}>
+              <Card style={{ width: "100%" }}>
                 <strong>{a.service_title}</strong> <br />
                 👩‍🎨 Майстер: {a.master_name} <br />
                 📅 {new Date(a.date).toLocaleDateString()} 🕒{" "}
                 {a.time.slice(0, 5)} <br />
+                📌 Статус:{" "}
+                <strong>
+                  {a.status === "confirmed"
+                    ? "✅ Підтверджено"
+                    : "⏳ Очікує підтвердження"}
+                </strong>
+                <br />
                 <Button
                   onClick={() => cancelAppointment(a.id)}
                   type="danger"

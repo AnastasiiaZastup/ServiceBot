@@ -146,16 +146,21 @@ export default function MasterSetup({
         </Card>
       )}
 
-      <div style={{ marginTop: 24 }}>
-        <Button onClick={onBack} type="grey" style={{ marginRight: 12 }}>
+      <div
+        style={{
+          marginTop: 24,
+          display: "flex",
+          flexWrap: "wrap",
+          gap: "12px",
+        }}
+      >
+        <Button onClick={onBack} type="grey">
           ⬅️ Назад
         </Button>
-        <Button onClick={saveAll} type="success" style={{ marginRight: 12 }}>
+        <Button onClick={saveAll} type="success">
           💾 Зберегти
         </Button>
-        <Button onClick={onViewAppointments} type="default">
-          📅 Переглянути записи
-        </Button>
+        <Button onClick={onViewAppointments}>📅 Переглянути записи</Button>
       </div>
     </div>
   );
