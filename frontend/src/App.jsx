@@ -93,7 +93,16 @@ function App() {
     }
 
     return (
-      <div style={{ padding: "16px" }}>
+      <div
+        style={{
+          padding: 16,
+          maxWidth: 400,
+          margin: "0 auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
         <h1>Привіт, {telegramUser.first_name}! 👋</h1>
         <p>Будь ласка, зареєструйтесь як клієнт:</p>
 

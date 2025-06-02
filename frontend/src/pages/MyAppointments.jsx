@@ -13,16 +13,7 @@ export default function MyAppointments({ user, onBack, showToast }) {
       if (!res.ok) throw new Error(res.statusText);
 
       const data = await res.json();
-      const filtered = (data.appointments || []).filter(
-        (a) => a.status !== "canceled"
-      );
-      setAppointments(filtered);
-
-      // 🐞 Лог для перевірки статусів
-      console.log(
-        "📦 Статуси записів:",
-        filtered.map((a) => ({ id: a.id, status: a.status }))
-      );
+      setAppointments(data.appointments || []);
     } catch (err) {
       console.error("❌ Помилка отримання записів:", err);
       showToast("❌ Помилка завантаження записів", "error");
