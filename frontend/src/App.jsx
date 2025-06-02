@@ -7,6 +7,7 @@ import SelectTime from "./pages/SelectTime.jsx";
 import MyAppointments from "./pages/MyAppointments.jsx";
 import MyAppointmentsMaster from "./pages/MyAppointmentsMaster.jsx";
 import MasterSetup from "./pages/MasterSetup.jsx";
+import Button from "./components/Button";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -72,7 +73,7 @@ function App() {
 
   if (view === "register") {
     if (telegramUser.username === "zastup_anastasia") {
-      return <p>Завантаження...</p>; // вже редіректиться через useEffect
+      return <p>Завантаження...</p>;
     }
     return (
       <div style={{ padding: "16px" }}>
@@ -90,7 +91,7 @@ function App() {
           onChange={(e) => setFormPhone(e.target.value)}
           style={{ display: "block", marginBottom: 12, width: "100%" }}
         />
-        <button
+        <Button
           onClick={handleRegister}
           style={{
             padding: "10px 20px",
@@ -102,7 +103,7 @@ function App() {
           }}
         >
           Зареєструватися
-        </button>
+        </Button>
       </div>
     );
   }
@@ -123,9 +124,9 @@ function App() {
 
       {view === "services" && user && selectedCategory && (
         <div style={{ padding: 16 }}>
-          <button onClick={() => setView("category")}>
+          <Button onClick={() => setView("category")}>
             ⬅ Назад до категорій
-          </button>
+          </Button>
           <Services
             user={user}
             category={selectedCategory}
@@ -134,9 +135,9 @@ function App() {
               setView("selectMaster");
             }}
           />
-          <button onClick={() => setView("myAppointments")}>
+          <Button onClick={() => setView("myAppointments")}>
             📅 Мої записи
-          </button>
+          </Button>
         </div>
       )}
 

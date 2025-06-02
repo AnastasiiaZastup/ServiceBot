@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Button from "./components/Button";
 
 export default function MyAppointmentsMaster({ user, onBack }) {
   const [appointments, setAppointments] = useState([]);
@@ -40,9 +41,9 @@ export default function MyAppointmentsMaster({ user, onBack }) {
   return (
     <div style={{ padding: 16 }}>
       <h2>🧑‍🎨 Ваші записи (майстер)</h2>
-      <button onClick={onBack} style={{ marginBottom: 12 }}>
+      <Button onClick={onBack} style={{ marginBottom: 12 }}>
         ⬅️ Назад
-      </button>
+      </Button>
 
       {appointments.length === 0 ? (
         <p>Наразі у вас немає записів.</p>
@@ -64,7 +65,7 @@ export default function MyAppointmentsMaster({ user, onBack }) {
               <br />
               📌 Статус: <strong>{a.status}</strong> <br />
               <div style={{ marginTop: 8 }}>
-                <button
+                <Button
                   onClick={() => updateStatus(a.id, "confirmed")}
                   style={{
                     marginRight: 8,
@@ -77,8 +78,8 @@ export default function MyAppointmentsMaster({ user, onBack }) {
                   }}
                 >
                   ✅ Підтвердити
-                </button>
-                <button
+                </Button>
+                <Button
                   onClick={() => updateStatus(a.id, "canceled")}
                   style={{
                     backgroundColor: "#ef4444",
@@ -90,7 +91,7 @@ export default function MyAppointmentsMaster({ user, onBack }) {
                   }}
                 >
                   ❌ Скасувати
-                </button>
+                </Button>
               </div>
             </li>
           ))}

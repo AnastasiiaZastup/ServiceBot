@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Button from "./components/Button";
 
 export default function MasterSetup({
   user,
@@ -103,7 +104,7 @@ export default function MasterSetup({
           value={slotTime}
           onChange={(e) => setSlotTime(e.target.value)}
         />
-        <button onClick={addSlot}>➕ Додати</button>
+        <Button onClick={addSlot}>➕ Додати</Button>
       </div>
 
       {slots.length > 0 && (
@@ -120,10 +121,10 @@ export default function MasterSetup({
       )}
 
       <div style={{ marginTop: 24 }}>
-        <button onClick={onBack} style={{ marginRight: 12 }}>
+        <Button onClick={onBack} style={{ marginRight: 12 }}>
           ⬅️ Назад
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={saveAll}
           style={{
             backgroundColor: "#10b981",
@@ -136,8 +137,8 @@ export default function MasterSetup({
           }}
         >
           💾 Зберегти
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onViewAppointments}
           style={{
             backgroundColor: "#3b82f6",
@@ -149,7 +150,7 @@ export default function MasterSetup({
           }}
         >
           📅 Переглянути записи
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Button from "./components/Button";
 
 export default function SelectCategory({
   onSelectCategory,
@@ -34,7 +35,7 @@ export default function SelectCategory({
       <ul style={{ listStyle: "none", padding: 0 }}>
         {categories.map((cat) => (
           <li key={cat.id} style={{ marginBottom: "12px" }}>
-            <button
+            <Button
               onClick={() => onSelectCategory(cat)}
               style={{
                 padding: "10px 20px",
@@ -46,13 +47,12 @@ export default function SelectCategory({
               }}
             >
               {cat.name}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>
 
-      {/* 🔽 Додана кнопка "Мої записи" */}
-      <button
+      <Button
         onClick={onViewAppointments}
         style={{
           marginTop: "20px",
@@ -65,7 +65,7 @@ export default function SelectCategory({
         }}
       >
         📅 Мої записи
-      </button>
+      </Button>
     </div>
   );
 }

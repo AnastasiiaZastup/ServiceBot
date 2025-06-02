@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Button from "./components/Button";
 
 export default function SelectMaster({ service, onBack, onSelectMaster }) {
   const [masters, setMasters] = useState([]);
@@ -36,7 +37,7 @@ export default function SelectMaster({ service, onBack, onSelectMaster }) {
             <ul style={{ listStyle: "none", padding: 0 }}>
               {masters.map((master) => (
                 <li key={master.id} style={{ marginBottom: 12 }}>
-                  <button
+                  <Button
                     onClick={() => onSelectMaster(master)}
                     style={{
                       width: "100%",
@@ -54,7 +55,7 @@ export default function SelectMaster({ service, onBack, onSelectMaster }) {
                         @{master.username}
                       </span>
                     )}
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>
@@ -62,7 +63,7 @@ export default function SelectMaster({ service, onBack, onSelectMaster }) {
         </>
       )}
 
-      <button
+      <Button
         onClick={onBack}
         style={{
           marginTop: 24,
@@ -73,7 +74,7 @@ export default function SelectMaster({ service, onBack, onSelectMaster }) {
         }}
       >
         ⬅️ Назад
-      </button>
+      </Button>
     </div>
   );
 }

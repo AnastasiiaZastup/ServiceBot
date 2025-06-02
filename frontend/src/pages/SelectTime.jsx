@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
+import Button from "./components/Button";
 
 export default function SelectTime({
   user,
@@ -126,18 +127,18 @@ export default function SelectTime({
       )}
 
       <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
-        <button
+        <Button
           onClick={onBack}
           style={{ padding: "6px 12px", borderRadius: 8 }}
         >
           ⬅️ Назад
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onGoToAppointments}
           style={{ padding: "6px 12px", borderRadius: 8 }}
         >
           📋 Мої записи
-        </button>
+        </Button>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Button from "./components/Button";
 
 export default function Services({ onSelectService, category }) {
   const [services, setServices] = useState([]);
@@ -30,7 +31,7 @@ export default function Services({ onSelectService, category }) {
             <li key={service.id} style={{ marginBottom: "12px" }}>
               <strong>{service.name}</strong>
               <br />
-              <button
+              <Button
                 onClick={() => onSelectService(service)}
                 style={{
                   marginTop: "8px",
@@ -43,7 +44,7 @@ export default function Services({ onSelectService, category }) {
                 }}
               >
                 Обрати
-              </button>
+              </Button>
             </li>
           ))}
         </ul>
