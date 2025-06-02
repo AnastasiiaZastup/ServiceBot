@@ -1,0 +1,8 @@
+/* components/Label.module.css */
+.label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 500;
+  color: #374151;
+  font-size: 15px;
+}

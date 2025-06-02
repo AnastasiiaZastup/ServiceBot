@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import Button from "../components/Button";
-import Loader from "../components/Loader";
 
 export default function SelectTime({
   user,
@@ -10,6 +9,7 @@ export default function SelectTime({
   master,
   onBack,
   onGoToAppointments,
+  showToast, // 🆕
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [availableTimes, setAvailableTimes] = useState([]);
@@ -32,10 +32,11 @@ export default function SelectTime({
       setAvailableTimes(data.slots.map((s) => s.time.slice(0, 5)));
     } catch (err) {
       console.error("❌ Помилка завантаження слотів:", err);
+      showToast("❌ Помилка завантаження слотів", "error");
     } finally {
       setLoading(false);
     }
-  }, [master.id, selectedDate]);
+  }, [master.id, selectedDate, showToast]);
 
   const fetchBookedSlots = useCallback(async () => {
     try {
@@ -48,8 +49,9 @@ export default function SelectTime({
       setBookedTimes(data.slots.map((s) => s.time.slice(0, 5)));
     } catch (err) {
       console.error("❌ Помилка отримання зайнятих слотів:", err);
+      showToast("❌ Помилка завантаження зайнятих слотів", "error");
     }
-  }, [master.id, selectedDate]);
+  }, [master.id, selectedDate, showToast]);
 
   useEffect(() => {
     fetchAvailableSlots();
@@ -75,11 +77,11 @@ export default function SelectTime({
 
       if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
 
-      alert("✅ Запис створено!");
+      showToast("✅ Запис створено!", "success");
       onGoToAppointments();
     } catch (err) {
       console.error("❌ Помилка створення запису:", err);
-      alert("Не вдалося створити запис.");
+      showToast("❌ Не вдалося створити запис", "error");
     }
   };
 
@@ -97,7 +99,7 @@ export default function SelectTime({
       </h3>
 
       {loading ? (
-        <Loader />
+        <p>Завантаження...</p>
       ) : availableTimes.length === 0 ? (
         <p>Немає доступних слотів на цю дату.</p>
       ) : (
@@ -131,14 +133,12 @@ export default function SelectTime({
         <Button
           onClick={onBack}
           style={{ padding: "6px 12px", borderRadius: 8 }}
-          type="grey"
         >
           ⬅️ Назад
         </Button>
         <Button
           onClick={onGoToAppointments}
           style={{ padding: "6px 12px", borderRadius: 8 }}
-          type="success"
         >
           📋 Мої записи
         </Button>

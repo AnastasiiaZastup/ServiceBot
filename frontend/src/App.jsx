@@ -1,5 +1,5 @@
-// 🔧 ОНОВЛЕНИЙ App.jsx
 import React, { useState, useEffect } from "react";
+
 import SelectCategory from "./pages/SelectCategory.jsx";
 import Services from "./pages/Services.jsx";
 import SelectMaster from "./pages/SelectMaster.jsx";
@@ -7,8 +7,13 @@ import SelectTime from "./pages/SelectTime.jsx";
 import MyAppointments from "./pages/MyAppointments.jsx";
 import MyAppointmentsMaster from "./pages/MyAppointmentsMaster.jsx";
 import MasterSetup from "./pages/MasterSetup.jsx";
+
 import Button from "./components/Button.jsx";
 import Loader from "./components/Loader.jsx";
+import Card from "./components/Card";
+import Input from "./components/Input";
+import Label from "./components/Label";
+import Toast from "./components/Toast.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -18,6 +23,15 @@ function App() {
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedService, setSelectedService] = useState(null);
   const [selectedMaster, setSelectedMaster] = useState(null);
+  const [toast, setToast] = useState(null); // { message: '', type: 'success' }
+
+  const showToast = (message, type = "success") => {
+    setToast({ message, type });
+  };
+
+  const hideToast = () => {
+    setToast(null);
+  };
 
   useEffect(() => {
     const tg = window.Telegram.WebApp;
@@ -64,9 +78,10 @@ function App() {
       const data = await res.json();
       setUser(data.user);
       setView("category");
+      showToast("✅ Реєстрація успішна!", "success");
     } catch (err) {
       console.error("❌ Помилка реєстрації:", err);
-      alert("Не вдалося зареєструватися.");
+      showToast("❌ Не вдалося зареєструватися.", "error");
     }
   };
 
@@ -76,33 +91,33 @@ function App() {
     if (telegramUser.username === "zastup_anastasia") {
       return <p>Завантаження...</p>;
     }
+
     return (
       <div style={{ padding: "16px" }}>
         <h1>Привіт, {telegramUser.first_name}! 👋</h1>
         <p>Будь ласка, зареєструйтесь як клієнт:</p>
-        <input
-          placeholder="Ваше ім'я"
-          value={formName}
-          onChange={(e) => setFormName(e.target.value)}
-          style={{ display: "block", marginBottom: 8, width: "100%" }}
-        />
-        <input
-          placeholder="Номер телефону"
-          value={formPhone}
-          onChange={(e) => setFormPhone(e.target.value)}
-          style={{ display: "block", marginBottom: 12, width: "100%" }}
-        />
-        <Button
-          onClick={handleRegister}
-          style={{
-            padding: "10px 20px",
-            fontSize: "16px",
-            backgroundColor: "#2b82f6",
-            color: "white",
-            border: "none",
-            borderRadius: "8px",
-          }}
-        >
+
+        <Card>
+          <Label htmlFor="name">Ваше ім’я</Label>
+          <Input
+            id="name"
+            value={formName}
+            onChange={(e) => setFormName(e.target.value)}
+            placeholder="Ім’я"
+          />
+
+          <Label htmlFor="phone" style={{ marginTop: "12px" }}>
+            Номер телефону
+          </Label>
+          <Input
+            id="phone"
+            value={formPhone}
+            onChange={(e) => setFormPhone(e.target.value)}
+            placeholder="+380..."
+          />
+        </Card>
+
+        <Button onClick={handleRegister} type="success">
           Зареєструватися
         </Button>
       </div>
@@ -126,7 +141,7 @@ function App() {
       {view === "services" && user && selectedCategory && (
         <div style={{ padding: 16 }}>
           <Button onClick={() => setView("category")}>
-            ⬅ Назад до категорій
+            ⬅️ Назад до категорій
           </Button>
           <Services
             user={user}
@@ -161,6 +176,7 @@ function App() {
           master={selectedMaster}
           onBack={() => setView("selectMaster")}
           onGoToAppointments={() => setView("myAppointments")}
+          showToast={showToast}
         />
       )}
 
@@ -170,18 +186,28 @@ function App() {
           onBack={() => setView("register")}
           onSave={() => setView("masterAppointments")}
           onViewAppointments={() => setView("masterAppointments")}
+          showToast={showToast} // 🔥
         />
       )}
 
       {view === "myAppointments" && user && (
-        <MyAppointments user={user} onBack={() => setView("category")} />
+        <MyAppointments
+          user={user}
+          onBack={() => setView("category")}
+          showToast={showToast} // ✅
+        />
       )}
 
       {view === "masterAppointments" && user && (
         <MyAppointmentsMaster
           user={user}
           onBack={() => setView("masterSetup")}
+          showToast={showToast} // ✅
         />
+      )}
+
+      {toast && (
+        <Toast message={toast.message} type={toast.type} onClose={hideToast} />
       )}
     </>
   );

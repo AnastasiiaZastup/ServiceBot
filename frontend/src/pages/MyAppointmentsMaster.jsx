@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import Button from "../components/Button";
+import Card from "../components/Card";
 
-export default function MyAppointmentsMaster({ user, onBack }) {
+export default function MyAppointmentsMaster({ user, onBack, showToast }) {
   const [appointments, setAppointments] = useState([]);
 
   const fetchAppointments = async () => {
@@ -14,6 +15,7 @@ export default function MyAppointmentsMaster({ user, onBack }) {
       setAppointments(data.appointments || []);
     } catch (err) {
       console.error("❌ Помилка отримання записів майстра:", err);
+      showToast("❌ Помилка завантаження записів", "error");
     }
   };
 
@@ -33,15 +35,20 @@ export default function MyAppointmentsMaster({ user, onBack }) {
       );
       if (!res.ok) throw new Error("Помилка оновлення статусу");
       await fetchAppointments();
+      showToast(
+        status === "confirmed" ? "✅ Запис підтверджено" : "❌ Запис скасовано",
+        status === "confirmed" ? "success" : "error"
+      );
     } catch (err) {
       console.error("❌ Статус не оновлено:", err);
+      showToast("❌ Не вдалося оновити статус", "error");
     }
   };
 
   return (
     <div style={{ padding: 16 }}>
       <h2>🧑‍🎨 Ваші записи (майстер)</h2>
-      <Button onClick={onBack} style={{ marginBottom: 12 }} type="grey">
+      <Button onClick={onBack} type="grey" style={{ marginBottom: 12 }}>
         ⬅️ Назад
       </Button>
 
@@ -50,51 +57,29 @@ export default function MyAppointmentsMaster({ user, onBack }) {
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
           {appointments.map((a) => (
-            <li
-              key={a.id}
-              style={{
-                marginBottom: 16,
-                padding: 12,
-                backgroundColor: "#f0f0f0",
-                borderRadius: 8,
-              }}
-            >
-              <strong>{a.service_title}</strong> <br />
-              👤 Клієнт: {a.client_name} <br />
-              📅 {new Date(a.date).toLocaleDateString()} 🕒 {a.time.slice(0, 5)}{" "}
-              <br />
-              📌 Статус: <strong>{a.status}</strong> <br />
-              <div style={{ marginTop: 8 }}>
-                <Button
-                  onClick={() => updateStatus(a.id, "confirmed")}
-                  style={{
-                    marginRight: 8,
-                    backgroundColor: "#10b981",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 6,
-                    padding: "6px 10px",
-                    cursor: "pointer",
-                  }}
-                  type="success"
-                >
-                  ✅ Підтвердити
-                </Button>
-                <Button
-                  onClick={() => updateStatus(a.id, "canceled")}
-                  style={{
-                    backgroundColor: "#ef4444",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 6,
-                    padding: "6px 10px",
-                    cursor: "pointer",
-                  }}
-                  type="danger"
-                >
-                  ❌ Скасувати
-                </Button>
-              </div>
+            <li key={a.id} style={{ marginBottom: 16 }}>
+              <Card>
+                <strong>{a.service_title}</strong> <br />
+                👤 Клієнт: {a.client_name} <br />
+                📅 {new Date(a.date).toLocaleDateString()} 🕒{" "}
+                {a.time.slice(0, 5)} <br />
+                📌 Статус: <strong>{a.status}</strong> <br />
+                <div style={{ marginTop: 8 }}>
+                  <Button
+                    onClick={() => updateStatus(a.id, "confirmed")}
+                    type="success"
+                    style={{ marginRight: 8 }}
+                  >
+                    ✅ Підтвердити
+                  </Button>
+                  <Button
+                    onClick={() => updateStatus(a.id, "canceled")}
+                    type="danger"
+                  >
+                    ❌ Скасувати
+                  </Button>
+                </div>
+              </Card>
             </li>
           ))}
         </ul>

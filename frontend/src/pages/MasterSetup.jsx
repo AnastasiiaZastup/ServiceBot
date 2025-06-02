@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
 import Button from "../components/Button";
+import Input from "../components/Input";
+import Label from "../components/Label";
+import Card from "../components/Card";
 
 export default function MasterSetup({
   user,
   onBack,
   onSave,
   onViewAppointments,
+  showToast, // 🆕
 }) {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
@@ -23,10 +27,11 @@ export default function MasterSetup({
         setServices(data.services || []);
       } catch (err) {
         console.error("❌ Помилка завантаження послуг:", err);
+        showToast("❌ Помилка завантаження послуг", "error");
       }
     };
     fetchServices();
-  }, []);
+  }, [showToast]);
 
   const toggleService = (serviceId) => {
     setSelectedServices((prev) =>
@@ -66,11 +71,11 @@ export default function MasterSetup({
         }),
       });
 
-      alert("✅ Дані успішно збережено!");
+      showToast("✅ Дані успішно збережено!", "success");
       onSave();
     } catch (err) {
       console.error("❌ Помилка при збереженні:", err);
-      alert("Сталася помилка при збереженні.");
+      showToast("❌ Сталася помилка при збереженні", "error");
     }
   };
 
@@ -79,80 +84,76 @@ export default function MasterSetup({
       <h2>🔧 Налаштування майстра</h2>
 
       <h3>Оберіть послуги, які ви надаєте:</h3>
-      {services.map((service) => (
-        <div key={service.id}>
-          <label>
-            <input
-              type="checkbox"
-              checked={selectedServices.includes(service.id)}
-              onChange={() => toggleService(service.id)}
-            />
-            {service.name}
-          </label>
-        </div>
-      ))}
+      <Card>
+        {services.map((service) => (
+          <div key={service.id} style={{ marginBottom: 6 }}>
+            <label>
+              <input
+                type="checkbox"
+                checked={selectedServices.includes(service.id)}
+                onChange={() => toggleService(service.id)}
+              />{" "}
+              {service.name}
+            </label>
+          </div>
+        ))}
+      </Card>
 
       <h3 style={{ marginTop: 16 }}>Додайте доступні слоти (дата + час):</h3>
-      <div style={{ display: "flex", gap: 8, marginBottom: 12 }}>
-        <input
-          type="date"
-          value={slotDate}
-          onChange={(e) => setSlotDate(e.target.value)}
-        />
-        <input
-          type="time"
-          value={slotTime}
-          onChange={(e) => setSlotTime(e.target.value)}
-        />
-        <Button onClick={addSlot} type="success">
-          ➕ Додати
-        </Button>
-      </div>
+      <Card>
+        <div
+          style={{
+            display: "flex",
+            gap: 12,
+            flexWrap: "wrap",
+            alignItems: "flex-end",
+          }}
+        >
+          <div style={{ flex: 1 }}>
+            <Label htmlFor="slotDate">Дата</Label>
+            <Input
+              id="slotDate"
+              type="date"
+              value={slotDate}
+              onChange={(e) => setSlotDate(e.target.value)}
+            />
+          </div>
+
+          <div style={{ flex: 1 }}>
+            <Label htmlFor="slotTime">Час</Label>
+            <Input
+              id="slotTime"
+              type="time"
+              value={slotTime}
+              onChange={(e) => setSlotTime(e.target.value)}
+            />
+          </div>
+
+          <Button onClick={addSlot}>➕ Додати</Button>
+        </div>
+      </Card>
 
       {slots.length > 0 && (
-        <>
+        <Card>
           <h4>🗓️ Додані слоти:</h4>
-          <ul>
+          <ul style={{ paddingLeft: 20 }}>
             {slots.map((s, idx) => (
               <li key={idx}>
                 📅 {s.date} ⏰ {s.time}
               </li>
             ))}
           </ul>
-        </>
+        </Card>
       )}
 
       <div style={{ marginTop: 24 }}>
         <Button onClick={onBack} type="grey" style={{ marginRight: 12 }}>
           ⬅️ Назад
         </Button>
-        <Button
-          onClick={saveAll}
-          style={{
-            backgroundColor: "#10b981",
-            color: "#fff",
-            padding: "6px 12px",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-            marginRight: 12,
-          }}
-          type="success"
-        >
+        <Button onClick={saveAll} type="success" style={{ marginRight: 12 }}>
           💾 Зберегти
         </Button>
-        <Button
-          onClick={onViewAppointments}
-          style={{
-            backgroundColor: "#3b82f6",
-            color: "#fff",
-            padding: "6px 12px",
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-          }}
-          type="success"
-        >
+        <Button onClick={onViewAppointments} type="default">
           📅 Переглянути записи
         </Button>
       </div>
