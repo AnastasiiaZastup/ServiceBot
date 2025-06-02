@@ -5,31 +5,34 @@ import Card from "../components/Card";
 export default function MyAppointments({ user, onBack, showToast }) {
   const [appointments, setAppointments] = useState([]);
 
-  // 1) підвантажуємо список
   const fetchAppointments = async () => {
     try {
       const res = await fetch(
         `https://service-bot-backend.onrender.com/appointments/${user.telegram_id}`
       );
-      if (!res.ok) throw new Error(`Status ${res.status}`);
+      if (!res.ok) throw new Error(res.statusText);
 
       const data = await res.json();
-      const appointments = data.appointments || [];
-
-      const filtered = appointments.filter((a) => a.status !== "canceled");
+      const filtered = (data.appointments || []).filter(
+        (a) => a.status !== "canceled"
+      );
       setAppointments(filtered);
+
+      // 🐞 Лог для перевірки статусів
+      console.log(
+        "📦 Статуси записів:",
+        filtered.map((a) => ({ id: a.id, status: a.status }))
+      );
     } catch (err) {
       console.error("❌ Помилка отримання записів:", err);
       showToast("❌ Помилка завантаження записів", "error");
     }
   };
 
-  // 2) запускаємо один раз на маунті
   useEffect(() => {
     if (user?.telegram_id) fetchAppointments();
   }, [user]);
 
-  // 3) обробник скасування
   const cancelAppointment = async (appointmentId) => {
     try {
       const res = await fetch(
