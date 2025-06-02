@@ -320,19 +320,18 @@ fastify.get(
       // Отримати всі записи клієнта (а не майстра)
       const { rows: appointments } = await client.query(
         `
-        SELECT
-          appointments.id,
-          appointments.date,
-          appointments.time,
-          appointments.status,
-          services.name AS service_title,
-          services.price,
-          masters.name AS master_name
-        FROM appointments
-        JOIN services ON appointments.service_id = services.id
-        JOIN users AS masters ON appointments.master_id = masters.id
-        WHERE appointments.user_id = $1
-        ORDER BY appointments.date ASC, appointments.time ASC;
+      SELECT
+   appointments.id,
+   appointments.date,
+   TO_CHAR(appointments.time, 'HH24:MI:SS') AS time,
+   services.name AS service_title,
+   users.name AS master_name
+ FROM appointments
+ JOIN services ON appointments.service_id = services.id
+ JOIN users ON appointments.master_id = users.id
+ WHERE appointments.user_id = $1
+ ORDER BY appointments.date, appointments.time
+
         `,
         [user_id]
       );
