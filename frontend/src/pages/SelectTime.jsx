@@ -9,12 +9,12 @@ export default function SelectTime({
   master,
   onBack,
   onGoToAppointments,
-  showToast, // 🆕
 }) {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [availableTimes, setAvailableTimes] = useState([]);
-  const [bookedTimes, setBookedTimes] = useState([]);
+
   const [loading, setLoading] = useState(false);
+  const [selectedTime, setSelectedTime] = useState(null);
 
   const formatLocalDate = (date) => {
     return date.toLocaleDateString("sv-SE"); // YYYY-MM-DD
@@ -32,117 +32,91 @@ export default function SelectTime({
       setAvailableTimes(data.slots.map((s) => s.time.slice(0, 5)));
     } catch (err) {
       console.error("❌ Помилка завантаження слотів:", err);
-      showToast("❌ Помилка завантаження слотів", "error");
     } finally {
       setLoading(false);
     }
-  }, [master.id, selectedDate, showToast]);
-
-  const fetchBookedSlots = useCallback(async () => {
-    try {
-      const res = await fetch(
-        `https://service-bot-backend.onrender.com/appointments/booked/${
-          master.id
-        }/${formatLocalDate(selectedDate)}`
-      );
-      const data = await res.json();
-      setBookedTimes(data.slots.map((s) => s.time.slice(0, 5)));
-    } catch (err) {
-      console.error("❌ Помилка отримання зайнятих слотів:", err);
-      showToast("❌ Помилка завантаження зайнятих слотів", "error");
-    }
-  }, [master.id, selectedDate, showToast]);
+  }, [master.id, selectedDate]);
 
   useEffect(() => {
-    fetchAvailableSlots();
-    fetchBookedSlots();
-  }, [fetchAvailableSlots, fetchBookedSlots]);
+    if (master && selectedDate) fetchAvailableSlots();
+  }, [fetchAvailableSlots]);
 
-  const handleSelectTime = async (time) => {
-    const dateTime = `${formatLocalDate(selectedDate)}T${time}:00`;
+  const handleBooking = async () => {
+    if (!selectedTime) return;
     try {
       const res = await fetch(
-        `https://service-bot-backend.onrender.com/appointments`,
+        "https://service-bot-backend.onrender.com/appointments",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            telegram_id: user.telegram_id,
-            service_id: service.id,
+            user_id: user.id,
             master_id: master.id,
-            date_time: dateTime,
+            service_id: service.id,
+            date: formatLocalDate(selectedDate),
+            time: selectedTime,
           }),
         }
       );
-
-      if (!res.ok) throw new Error(`Запит не вдався: ${res.status}`);
-
-      showToast("✅ Запис створено!", "success");
+      if (!res.ok) throw new Error("Запис не вдався");
       onGoToAppointments();
     } catch (err) {
-      console.error("❌ Помилка створення запису:", err);
-      showToast("❌ Не вдалося створити запис", "error");
+      console.error("❌ Помилка запису:", err);
     }
   };
 
   return (
     <div style={{ padding: 16 }}>
-      <h2>🗓️ Виберіть дату</h2>
+      <h2>🕒 Оберіть дату та час</h2>
+      <Button onClick={onBack} type="grey" style={{ marginBottom: 12 }}>
+        ⬅️ Назад
+      </Button>
+
+      <p>
+        <strong>Послуга:</strong> {service.name}
+      </p>
+      <p>
+        <strong>Ціна:</strong> {service.price} грн
+      </p>
+
       <Calendar
         onChange={setSelectedDate}
         value={selectedDate}
         minDate={new Date()}
       />
 
-      <h3 style={{ marginTop: 24 }}>
-        🕒 Доступні часи на {formatLocalDate(selectedDate)}
-      </h3>
-
       {loading ? (
-        <p>Завантаження...</p>
-      ) : availableTimes.length === 0 ? (
-        <p>Немає доступних слотів на цю дату.</p>
+        <p>Завантаження доступного часу...</p>
       ) : (
-        <div
-          style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}
-        >
-          {availableTimes.map((time) => {
-            const isBooked = bookedTimes.includes(time);
-            return (
-              <button
-                key={time}
-                onClick={() => !isBooked && handleSelectTime(time)}
-                style={{
-                  padding: "8px 12px",
-                  borderRadius: 8,
-                  border: "none",
-                  backgroundColor: isBooked ? "#d1d5db" : "#10b981",
-                  color: isBooked ? "#6b7280" : "#fff",
-                  cursor: isBooked ? "not-allowed" : "pointer",
-                }}
-                disabled={isBooked}
-              >
-                {time}
-              </button>
-            );
-          })}
-        </div>
+        <>
+          <h4 style={{ marginTop: 16 }}>Доступний час:</h4>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {availableTimes.length === 0 ? (
+              <p>Немає доступного часу на цю дату.</p>
+            ) : (
+              availableTimes.map((time) => (
+                <Button
+                  key={time}
+                  onClick={() => setSelectedTime(time)}
+                  type={selectedTime === time ? "success" : "light"}
+                >
+                  {time}
+                </Button>
+              ))
+            )}
+          </div>
+        </>
       )}
 
-      <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
+      {selectedTime && (
         <Button
-          onClick={onBack}
-          style={{ padding: "6px 12px", borderRadius: 8 }}
+          onClick={handleBooking}
+          type="success"
+          style={{ marginTop: 24 }}
         >
-          ⬅️ Назад
+          ✅ Записатись на {selectedTime}
         </Button>
-        <Button
-          onClick={onGoToAppointments}
-          style={{ padding: "6px 12px", borderRadius: 8 }}
-        >
-          📋 Мої записи
-        </Button>
-      </div>
+      )}
     </div>
   );
 }
