@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import Button from "./components/Button";
+import Button from "../components/Button";
 
 export default function MyAppointments({ user, onBack }) {
   const [appointments, setAppointments] = useState([]);

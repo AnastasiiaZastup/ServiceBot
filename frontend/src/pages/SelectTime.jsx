@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import Button from "./components/Button";
+import Button from "../components/Button";
 
 export default function SelectTime({
   user,

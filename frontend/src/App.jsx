@@ -7,7 +7,7 @@ import SelectTime from "./pages/SelectTime.jsx";
 import MyAppointments from "./pages/MyAppointments.jsx";
 import MyAppointmentsMaster from "./pages/MyAppointmentsMaster.jsx";
 import MasterSetup from "./pages/MasterSetup.jsx";
-import Button from "./components/Button";
+import Button from "./components/Button.jsx";
 
 function App() {
   const [user, setUser] = useState(null);
