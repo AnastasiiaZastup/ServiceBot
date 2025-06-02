@@ -304,6 +304,7 @@ fastify.get(
     try {
       const client = await fastify.pg.connect();
 
+      // Отримати user_id по telegram_id
       const { rows: userRows } = await client.query(
         "SELECT id FROM users WHERE telegram_id = $1",
         [telegram_id]
@@ -316,30 +317,30 @@ fastify.get(
 
       const user_id = userRows[0].id;
 
+      // Отримати всі записи клієнта (а не майстра)
       const { rows: appointments } = await client.query(
         `
-  SELECT
-  appointments.id,
-  appointments.date,
-  appointments.time,
-  appointments.status,
-  services.name AS service_title,
-  services.price,
-  users.name AS master_name
-FROM appointments
-JOIN services ON appointments.service_id = services.id
-JOIN users ON appointments.master_id = users.id
-WHERE users.telegram_id = $1;
-
-  `,
+        SELECT
+          appointments.id,
+          appointments.date,
+          appointments.time,
+          appointments.status,
+          services.name AS service_title,
+          services.price,
+          masters.name AS master_name
+        FROM appointments
+        JOIN services ON appointments.service_id = services.id
+        JOIN users AS masters ON appointments.master_id = masters.id
+        WHERE appointments.user_id = $1
+        ORDER BY appointments.date ASC, appointments.time ASC;
+        `,
         [user_id]
       );
 
       client.release();
-
       return reply.code(200).send({ appointments });
     } catch (err) {
-      console.error("Error fetching appointments:", err);
+      console.error("❌ Error fetching appointments:", err);
       return reply.code(500).send({ error: "Server error" });
     }
   }
