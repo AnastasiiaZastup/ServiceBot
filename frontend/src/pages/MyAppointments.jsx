@@ -11,11 +11,13 @@ export default function MyAppointments({ user, onBack, showToast }) {
       const res = await fetch(
         `https://service-bot-backend.onrender.com/appointments/${user.telegram_id}`
       );
-      if (!res.ok) throw new Error(res.statusText);
+      if (!res.ok) throw new Error(`Status ${res.status}`);
+
       const data = await res.json();
-      setAppointments(data.appointments || []).filter(
-        (a) => a.status !== "canceled"
-      );
+      const appointments = data.appointments || [];
+
+      const filtered = appointments.filter((a) => a.status !== "canceled");
+      setAppointments(filtered);
     } catch (err) {
       console.error("❌ Помилка отримання записів:", err);
       showToast("❌ Помилка завантаження записів", "error");
