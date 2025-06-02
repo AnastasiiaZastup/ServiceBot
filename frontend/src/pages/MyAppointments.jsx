@@ -60,7 +60,11 @@ export default function MyAppointments({ user, onBack, showToast }) {
             {appointments.map((a) => (
               <li key={a.id} style={{ marginBottom: 16, width: "100%" }}>
                 <Card style={{ width: "100%" }}>
-                  <strong>{a.service_title}</strong> — 💰 {a.price} грн <br />
+                  <strong>
+                    {a.service_title}
+                    {typeof a.price === "number" && ` — 💰 ${a.price} грн`}
+                  </strong>
+                  <br />
                   👩‍🎨 Майстер: {a.master_name} <br />
                   📅 {new Date(a.date).toLocaleDateString()} 🕒{" "}
                   {a.time.slice(0, 5)} <br />
