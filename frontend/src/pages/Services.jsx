@@ -42,6 +42,7 @@ export default function Services({ onSelectService, category }) {
                   borderRadius: "8px",
                   cursor: "pointer",
                 }}
+                type="success"
               >
                 Обрати
               </Button>

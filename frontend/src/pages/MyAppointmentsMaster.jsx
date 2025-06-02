@@ -41,7 +41,7 @@ export default function MyAppointmentsMaster({ user, onBack }) {
   return (
     <div style={{ padding: 16 }}>
       <h2>🧑‍🎨 Ваші записи (майстер)</h2>
-      <Button onClick={onBack} style={{ marginBottom: 12 }}>
+      <Button onClick={onBack} style={{ marginBottom: 12 }} type="grey">
         ⬅️ Назад
       </Button>
 
@@ -76,6 +76,7 @@ export default function MyAppointmentsMaster({ user, onBack }) {
                     padding: "6px 10px",
                     cursor: "pointer",
                   }}
+                  type="success"
                 >
                   ✅ Підтвердити
                 </Button>
@@ -89,6 +90,7 @@ export default function MyAppointmentsMaster({ user, onBack }) {
                     padding: "6px 10px",
                     cursor: "pointer",
                   }}
+                  type="danger"
                 >
                   ❌ Скасувати
                 </Button>

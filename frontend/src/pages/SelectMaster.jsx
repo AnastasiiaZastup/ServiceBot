@@ -72,6 +72,7 @@ export default function SelectMaster({ service, onBack, onSelectMaster }) {
           border: "none",
           backgroundColor: "#d1d5db",
         }}
+        type="grey"
       >
         ⬅️ Назад
       </Button>

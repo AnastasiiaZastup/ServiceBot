@@ -17,3 +17,24 @@
   background-color: #94a3b8;
   cursor: not-allowed;
 }
+
+.success {
+  background-color: #10b981;
+}
+
+.success:hover {
+  background-color: #0e9e6e;
+}
+
+.danger {
+  background-color: #ef4444;
+}
+
+.danger:hover {
+  background-color: #dc2626;
+}
+
+.grey {
+  background-color: #d1d5db;
+  color: black;
+}

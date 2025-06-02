@@ -104,7 +104,9 @@ export default function MasterSetup({
           value={slotTime}
           onChange={(e) => setSlotTime(e.target.value)}
         />
-        <Button onClick={addSlot}>➕ Додати</Button>
+        <Button onClick={addSlot} type="success">
+          ➕ Додати
+        </Button>
       </div>
 
       {slots.length > 0 && (
@@ -121,7 +123,7 @@ export default function MasterSetup({
       )}
 
       <div style={{ marginTop: 24 }}>
-        <Button onClick={onBack} style={{ marginRight: 12 }}>
+        <Button onClick={onBack} type="grey" style={{ marginRight: 12 }}>
           ⬅️ Назад
         </Button>
         <Button
@@ -135,6 +137,7 @@ export default function MasterSetup({
             cursor: "pointer",
             marginRight: 12,
           }}
+          type="success"
         >
           💾 Зберегти
         </Button>
@@ -148,6 +151,7 @@ export default function MasterSetup({
             borderRadius: 6,
             cursor: "pointer",
           }}
+          type="success"
         >
           📅 Переглянути записи
         </Button>

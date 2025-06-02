@@ -130,12 +130,14 @@ export default function SelectTime({
         <Button
           onClick={onBack}
           style={{ padding: "6px 12px", borderRadius: 8 }}
+          type="grey"
         >
           ⬅️ Назад
         </Button>
         <Button
           onClick={onGoToAppointments}
           style={{ padding: "6px 12px", borderRadius: 8 }}
+          type="success"
         >
           📋 Мої записи
         </Button>

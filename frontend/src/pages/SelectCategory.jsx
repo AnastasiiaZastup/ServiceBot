@@ -63,6 +63,7 @@ export default function SelectCategory({
           borderRadius: "8px",
           cursor: "pointer",
         }}
+        type="success"
       >
         📅 Мої записи
       </Button>
