@@ -14,6 +14,8 @@ export default function MyAppointments({ user, onBack, showToast }) {
 
       const data = await res.json();
       setAppointments(data.appointments || []);
+
+      console.log("📦 Отримано записи:", data.appointments);
     } catch (err) {
       console.error("❌ Помилка отримання записів:", err);
       showToast("❌ Помилка завантаження записів", "error");
@@ -54,7 +56,7 @@ export default function MyAppointments({ user, onBack, showToast }) {
       ) : (
         <ul style={{ listStyle: "none", padding: 0 }}>
           {appointments.map((a) => (
-            <li key={a.id} style={{ marginBottom: 16, width: "100%" }}>
+            <li key={a.id} style={{ marginBottom: 16 }}>
               <Card style={{ width: "100%" }}>
                 <strong>{a.service_title}</strong> <br />
                 👩‍🎨 Майстер: {a.master_name} <br />
