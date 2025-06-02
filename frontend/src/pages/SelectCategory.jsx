@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Button from "../components/Button";
+import Loader from "../components/Loader";
 
 export default function SelectCategory({
   onSelectCategory,
@@ -26,7 +27,7 @@ export default function SelectCategory({
     fetchCategories();
   }, []);
 
-  if (loading) return <p>Завантаження категорій...</p>;
+  if (loading) return <Loader />;
 
   return (
     <div style={{ padding: "16px" }}>

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from "react";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import Button from "../components/Button";
+import Loader from "../components/Loader";
 
 export default function SelectTime({
   user,
@@ -96,7 +97,7 @@ export default function SelectTime({
       </h3>
 
       {loading ? (
-        <p>Завантаження...</p>
+        <Loader />
       ) : availableTimes.length === 0 ? (
         <p>Немає доступних слотів на цю дату.</p>
       ) : (

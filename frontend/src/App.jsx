@@ -8,6 +8,7 @@ import MyAppointments from "./pages/MyAppointments.jsx";
 import MyAppointmentsMaster from "./pages/MyAppointmentsMaster.jsx";
 import MasterSetup from "./pages/MasterSetup.jsx";
 import Button from "./components/Button.jsx";
+import Loader from "../components/Loader";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -69,7 +70,7 @@ function App() {
     }
   };
 
-  if (!telegramUser) return <p>Завантаження Telegram-користувача...</p>;
+  if (!telegramUser) return <Loader />;
 
   if (view === "register") {
     if (telegramUser.username === "zastup_anastasia") {

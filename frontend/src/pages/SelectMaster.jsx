@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import Button from "../components/Button";
+import Loader from "../components/Loader";
 
 export default function SelectMaster({ service, onBack, onSelectMaster }) {
   const [masters, setMasters] = useState([]);
@@ -28,7 +29,7 @@ export default function SelectMaster({ service, onBack, onSelectMaster }) {
       <h2>👩‍🎨 Оберіть майстра</h2>
 
       {loading ? (
-        <p>Завантаження...</p>
+        <Loader />
       ) : (
         <>
           {masters.length === 0 ? (
@@ -48,6 +49,7 @@ export default function SelectMaster({ service, onBack, onSelectMaster }) {
                       textAlign: "left",
                       cursor: "pointer",
                     }}
+                    type="success"
                   >
                     <strong>{master.name}</strong>
                     {master.username && (
