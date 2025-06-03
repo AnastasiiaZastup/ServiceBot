@@ -9,8 +9,7 @@ export default function MasterSetup({
   onBack,
   onSave,
   onViewAppointments,
-  onViewPrice, // 🆕 callback to switch to price view
-  showToast,
+  showToast, // 🆕
 }) {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);
@@ -162,9 +161,6 @@ export default function MasterSetup({
           💾 Зберегти
         </Button>
         <Button onClick={onViewAppointments}>📅 Переглянути записи</Button>
-        <Button onClick={onViewPrice} type="primary">
-          💰 Мій прайс
-        </Button>
       </div>
     </div>
   );

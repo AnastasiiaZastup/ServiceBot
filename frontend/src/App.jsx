@@ -7,7 +7,6 @@ import SelectTime from "./pages/SelectTime.jsx";
 import MyAppointments from "./pages/MyAppointments.jsx";
 import MyAppointmentsMaster from "./pages/MyAppointmentsMaster.jsx";
 import MasterSetup from "./pages/MasterSetup.jsx";
-import MasterPrice from "./pages/MasterPrice";
 
 import Button from "./components/Button.jsx";
 import Loader from "./components/Loader.jsx";
@@ -190,14 +189,15 @@ function App() {
         />
       )}
 
-      <MasterSetup
-        user={user}
-        onBack={() => setView("register")}
-        onSave={() => setView("master")}
-        onViewAppointments={() => setView("masterAppointments")}
-        setView={setView} // 🆕 додай це!
-        showToast={showToast}
-      />
+      {view === "masterSetup" && user && (
+        <MasterSetup
+          user={user}
+          onBack={() => setView("register")}
+          onSave={() => setView("masterAppointments")}
+          onViewAppointments={() => setView("masterAppointments")}
+          showToast={showToast} // 🔥
+        />
+      )}
 
       {view === "myAppointments" && user && (
         <MyAppointments
