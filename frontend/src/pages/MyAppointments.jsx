@@ -5,6 +5,14 @@ import Card from "../components/Card";
 export default function MyAppointments({ user, onBack, showToast }) {
   const [appointments, setAppointments] = useState([]);
 
+  const phrases = [
+    "✨ Давай творити красу разом!",
+    "🌸 Наша краса — в деталях",
+    "💫 Твоя краса — наше натхнення",
+    "❤️ Чекаємо на тебе знову!",
+    "🪞 Будь собою, а ми допоможемо засяяти!",
+  ];
+
   const fetchAppointments = async () => {
     try {
       const res = await fetch(
@@ -57,38 +65,42 @@ export default function MyAppointments({ user, onBack, showToast }) {
           <ul
             style={{ listStyle: "none", padding: 0, margin: 0, width: "100%" }}
           >
-            {appointments.map((a) => (
-              <li key={a.id} style={{ marginBottom: 16, width: "100%" }}>
-                <Card style={{ width: "100%" }}>
-                  <strong>
-                    {a.service_title}
-                    {typeof a.price === "number" && ` — 💰 ${a.price} грн`}
-                  </strong>
-                  <br />
-                  👩‍🎨 Майстер: {a.master_name} <br />
-                  📅 {new Date(a.date).toLocaleDateString()} 🕒{" "}
-                  {a.time.slice(0, 5)} <br />
-                  <Button
-                    onClick={() => cancelAppointment(a.id)}
-                    type="danger"
-                    style={{ marginTop: 8 }}
-                  >
-                    Скасувати
-                  </Button>
-                  <p
-                    style={{
-                      marginTop: 8,
-                      color: "#555",
-                      fontSize: 14,
-                      textAlign: "center",
-                      fontStyle: "italic",
-                    }}
-                  >
-                    ✨ Давай творити красу разом!
-                  </p>
-                </Card>
-              </li>
-            ))}
+            {appointments.map((a) => {
+              const randomPhrase =
+                phrases[Math.floor(Math.random() * phrases.length)];
+              return (
+                <li key={a.id} style={{ marginBottom: 16, width: "100%" }}>
+                  <Card style={{ width: "100%" }}>
+                    <strong>
+                      {a.service_title}
+                      {typeof a.price === "number" && ` — 💰 ${a.price} грн`}
+                    </strong>
+                    <br />
+                    👩‍🎨 Майстер: {a.master_name} <br />
+                    📅 {new Date(a.date).toLocaleDateString()} 🕒{" "}
+                    {a.time.slice(0, 5)} <br />
+                    <Button
+                      onClick={() => cancelAppointment(a.id)}
+                      type="danger"
+                      style={{ marginTop: 8 }}
+                    >
+                      Скасувати
+                    </Button>
+                    <p
+                      style={{
+                        marginTop: 8,
+                        color: "#555",
+                        fontSize: 14,
+                        textAlign: "center",
+                        fontStyle: "italic",
+                      }}
+                    >
+                      {randomPhrase}
+                    </p>
+                  </Card>
+                </li>
+              );
+            })}
           </ul>
 
           <p

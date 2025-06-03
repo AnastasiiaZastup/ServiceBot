@@ -5,7 +5,7 @@
   padding: 16px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   box-sizing: border-box;
-  width: 100%; /* важливо! */
+  width: 60px; /* важливо! */
 }
 
 .card:hover {

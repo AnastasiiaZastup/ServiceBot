@@ -2,7 +2,7 @@ import Fastify from "fastify";
 import fastifyPostgres from "@fastify/postgres";
 import fastifyCors from "@fastify/cors";
 import dotenv from "dotenv";
-import fetch from "node-fetch"; // якщо ще не імпортовано
+import fetch from "node-fetch";
 
 const BOT_TOKEN =
   process.env.BOT_TOKEN || "7842494100:AAFzOA_AwZEr-titLsOozCAz2thcYdfu3GE";
@@ -708,6 +708,32 @@ fastify.get("/appointments/booked/:masterId/:date", async (req, reply) => {
     reply.send({ slots: rows });
   } catch (err) {
     console.error("❌ Помилка отримання зайнятих слотів:", err);
+    reply.code(500).send({ error: "Помилка сервера" });
+  } finally {
+    client.release();
+  }
+});
+
+fastify.get("/services/by-master/:master_id", async (req, reply) => {
+  const { master_id } = req.params;
+
+  const client = await fastify.pg.connect();
+
+  try {
+    const { rows } = await client.query(
+      `
+      SELECT s.id, s.name, s.price, s.duration, s.description
+      FROM services s
+      JOIN masters_services ms ON s.id = ms.service_id
+      WHERE ms.master_id = $1
+      ORDER BY s.name ASC
+      `,
+      [master_id]
+    );
+
+    reply.send({ services: rows });
+  } catch (err) {
+    console.error("❌ Помилка при отриманні послуг майстра:", err);
     reply.code(500).send({ error: "Помилка сервера" });
   } finally {
     client.release();
