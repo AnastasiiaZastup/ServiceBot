@@ -60,6 +60,7 @@ export default function MyAppointmentsMaster({ user, onBack, showToast }) {
             <li key={a.id} style={{ marginBottom: 16 }}>
               <Card>
                 <strong>{a.service_title}</strong> <br />
+                💰 Ціна: {a.price} грн <br />
                 👤 Клієнт: {a.client_name} <br />
                 📅 {new Date(a.date).toLocaleDateString()} 🕒{" "}
                 {a.time.slice(0, 5)} <br />
