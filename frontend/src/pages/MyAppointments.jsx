@@ -79,6 +79,7 @@ export default function MyAppointments({ user, onBack, showToast }) {
                     👩‍🎨 Майстер: {a.master_name} <br />
                     📅 {new Date(a.date).toLocaleDateString()} 🕒{" "}
                     {a.time.slice(0, 5)} <br />
+                    💰 Ціна: {a.price} грн <br />
                     <Button
                       onClick={() => cancelAppointment(a.id)}
                       type="danger"
