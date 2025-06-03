@@ -22,7 +22,7 @@ const sendTelegramMessage = async (chatId, text) => {
     const result = await res.json();
     if (!result.ok) console.error("❌ Telegram error:", result);
   } catch (err) {
-    console.error("❌ Failed to send Telegram message:", err);
+    console.error("Failed to send Telegram message:", err);
   }
 };
 
