@@ -75,6 +75,17 @@ export default function MyAppointments({ user, onBack, showToast }) {
                   >
                     Скасувати
                   </Button>
+                  <p
+                    style={{
+                      marginTop: 8,
+                      color: "#555",
+                      fontSize: 14,
+                      textAlign: "center",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    ✨ Давай творити красу разом!
+                  </p>
                 </Card>
               </li>
             ))}

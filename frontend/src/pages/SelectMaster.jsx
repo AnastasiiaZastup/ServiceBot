@@ -45,11 +45,10 @@ export default function SelectMaster({ service, onBack, onSelectMaster }) {
                       padding: "12px",
                       borderRadius: "8px",
                       border: "1px solid #ccc",
-                      backgroundColor: "#f9fafb",
+                      backgroundColor: "#458fd9",
                       textAlign: "left",
                       cursor: "pointer",
                     }}
-                    type="success"
                   >
                     <strong>{master.name}</strong>
                     {master.username && (
