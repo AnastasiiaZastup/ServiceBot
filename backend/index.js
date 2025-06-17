@@ -45,9 +45,9 @@ console.log("✅ DATABASE_URL:", process.env.DATABASE_URL);
 
 const fastify = Fastify({ logger: true });
 
-// Налаштування CORS для підтримки DELETE-запитів
+
 fastify.register(fastifyCors, {
-  origin: "*", // можна вказати домен фронтенду замість '*'
+  origin: "*", 
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
 });
@@ -111,7 +111,7 @@ fastify.post("/user/register", async (req, reply) => {
     );
 
     if (rows.length > 0) {
-      // 🔄 оновлюємо роль, якщо інша
+     
       await client.query("UPDATE users SET role = $1 WHERE telegram_id = $2", [
         role || "client",
         telegram_id,
@@ -234,7 +234,7 @@ fastify.post("/appointments", async (req, reply) => {
     const date = dateObj.toISOString().split("T")[0];
     const time = dateObj.toTimeString().split(" ")[0];
 
-    // ✅ Перевірка на конфлікт
+  
     const conflictCheck = await client.query(
       `SELECT * FROM appointments
        WHERE master_id = $1 AND date = $2 AND time = $3`,
@@ -304,7 +304,7 @@ fastify.get(
     try {
       const client = await fastify.pg.connect();
 
-      // Отримати user_id по telegram_id
+      
       const { rows: userRows } = await client.query(
         "SELECT id FROM users WHERE telegram_id = $1",
         [telegram_id]
@@ -317,7 +317,7 @@ fastify.get(
 
       const user_id = userRows[0].id;
 
-      // Отримати всі записи клієнта (а не майстра)
+     
       const { rows: appointments } = await client.query(
         `
     SELECT
@@ -435,7 +435,7 @@ fastify.get(
     }
   }
 );
-//нове
+
 
 fastify.post("/master/services", async (req, reply) => {
   const { master_id, service_ids } = req.body;
@@ -477,7 +477,7 @@ fastify.post("/master/slots", async (req, reply) => {
 
       if (!date || !time) continue;
 
-      // 🛠 Нормалізація
+     
       const normalizedDate = new Date(date).toISOString().split("T")[0];
       const normalizedTime = time.length === 5 ? `${time}:00` : time;
 
@@ -567,7 +567,7 @@ fastify.patch("/user/role", async (req, reply) => {
   }
 });
 
-//всьо
+
 
 fastify.get("/categories", async (req, reply) => {
   try {
@@ -598,13 +598,13 @@ fastify.get("/services-by-category/:category_id", async (req, reply) => {
   }
 });
 
-// Видалення запису (скасування)
+
 fastify.delete("/appointments/:id", async (req, reply) => {
   const id = parseInt(req.params.id, 10);
   const client = await fastify.pg.connect();
 
   try {
-    // 🔎 Отримуємо всі деталі перед видаленням
+  
     const { rows } = await client.query(
       `SELECT a.date, a.time, u.telegram_id AS master_telegram_id,
               s.name AS service_name, u.name AS master_name
@@ -626,12 +626,12 @@ fastify.delete("/appointments/:id", async (req, reply) => {
 
     const text = `⚠️ Запис на послугу "${a.service_name}" було скасовано клієнтом.\n🗓 ${dateFormatted} о ${timeFormatted}`;
 
-    // ✅ Надсилаємо повідомлення майстру
+    
     if (a.master_telegram_id) {
       await sendTelegramMessage(a.master_telegram_id, text);
     }
 
-    // 🗑 Видаляємо запис
+    
     await client.query("DELETE FROM appointments WHERE id = $1", [id]);
 
     reply.code(204).send();
@@ -649,13 +649,13 @@ fastify.patch("/appointments/:id/status", async (req, reply) => {
 
   const client = await fastify.pg.connect();
   try {
-    // 1. Оновити статус у базі
+    
     await client.query("UPDATE appointments SET status = $1 WHERE id = $2", [
       status,
       id,
     ]);
 
-    // 2. Отримати всі потрібні дані для повідомлення
+    
     const { rows } = await client.query(
       `SELECT appointments.date, appointments.time, appointments.status,
               users.telegram_id, users.name as client_name,
@@ -683,7 +683,7 @@ fastify.patch("/appointments/:id/status", async (req, reply) => {
       message = `❌ Ваш запис на послугу "${a.service_name}" скасовано.\nБудь ласка, оберіть інший час.`;
     }
 
-    // 3. Надіслати повідомлення
+    
     if (message && a.telegram_id) {
       await sendTelegramMessage(a.telegram_id, message);
     }
@@ -743,7 +743,7 @@ fastify.get("/services/by-master/:master_id", async (req, reply) => {
   }
 });
 
-// Тут можна додати маршрути для майстрів, категорій, сервісів тощо
+
 
 const start = async () => {
   try {
@@ -756,3 +756,4 @@ const start = async () => {
 };
 
 start();
+

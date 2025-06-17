@@ -32,3 +32,4 @@ bot.command("menu", async (ctx) => {
 bot.launch().then(() => {
   console.log("✅ Бот запущено");
 });
+

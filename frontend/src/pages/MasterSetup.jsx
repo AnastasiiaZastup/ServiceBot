@@ -9,7 +9,7 @@ export default function MasterSetup({
   onBack,
   onSave,
   onViewAppointments,
-  showToast, // 🆕
+  showToast,
 }) {
   const [services, setServices] = useState([]);
   const [selectedServices, setSelectedServices] = useState([]);

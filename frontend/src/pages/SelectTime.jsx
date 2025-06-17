@@ -17,7 +17,7 @@ export default function SelectTime({
   const [loading, setLoading] = useState(false);
 
   const formatLocalDate = (date) => {
-    return date.toLocaleDateString("sv-SE"); // YYYY-MM-DD
+    return date.toLocaleDateString("sv-SE");
   };
 
   const fetchAvailableSlots = useCallback(async () => {
